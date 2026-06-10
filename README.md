@@ -57,36 +57,32 @@ Then test the push:
 node tracker.mjs --test-notify   # should buzz your phone
 ```
 
-## Running it 24/7 on your homeserver
+## Running it 24/7 on your homeserver (Docker)
 
-### Option A — Docker (recommended)
+Make sure `.env` exists on the homeserver (it's gitignored, so copy it over separately —
+e.g. `scp .env user@homeserver:~/chicken-breast-tracker/`). Needs ~2.5 GB free disk for the
+Playwright image.
+
 ```bash
-docker compose up -d --build
-docker compose logs -f
+docker compose run --rm chicken-tracker node tracker.mjs --test-notify   # confirm push works
+docker compose up -d --build                                             # run 24/7
+docker compose logs -f                                                   # watch it
 ```
-Runs in `--watch` mode, checking every `watch.intervalMinutes` (default 12). `config.json`
-and `state.json` are mounted, so it remembers stock state across restarts.
 
-### Option B — systemd timer (native)
+Runs in `--watch` mode, checking every `watch.intervalMinutes` (default 12). `config.json`,
+`state.json`, and `.env` are wired in, so it remembers stock state across restarts and
+restarts itself on reboot (`restart: unless-stopped`).
+
+Day-to-day:
 ```bash
-npm install
-sudo cp systemd/chicken-tracker.* /etc/systemd/system/
-# edit User / WorkingDirectory / paths in the .service first
-sudo systemctl daemon-reload
-sudo systemctl enable --now chicken-tracker.timer
-journalctl -u chicken-tracker.service -f
+docker compose ps                 # is it running?
+docker compose logs --tail=50     # recent checks
+docker compose restart            # apply config.json / .env changes
+docker compose down               # stop
 ```
 
-### Option C — cron
-```cron
-*/12 * * * * cd /home/sama/projects/chicken-breast-tracker && /usr/bin/node tracker.mjs --once >> tracker.log 2>&1
-```
-
-### Option D — just leave it watching in a terminal/tmux
-```bash
-npm install
-node tracker.mjs --watch
-```
+> Running locally for development (no Docker)? `npm install` then
+> `CHROMIUM_PATH=/usr/bin/chromium node tracker.mjs --once`.
 
 ## Config reference (`config.json`)
 Secrets live in **`.env`** (gitignored), everything else in `config.json`.
@@ -109,9 +105,9 @@ Secrets live in **`.env`** (gitignored), everything else in `config.json`.
 | `watch.intervalMinutes` | check frequency in `--watch` mode |
 | `browser.chromiumPath` | leave empty to use Playwright's Chromium; set to e.g. `/usr/bin/chromium` if bundled is missing |
 
-The tracker auto-loads `.env` from the project dir (override with `ENV_FILE`). systemd reads
-it via `EnvironmentFile=`; Docker via `env_file:`. Real environment variables always win over
-the file. It refuses to start if `NTFY_TOPIC`, `LAT`, or `LON` are missing.
+The tracker auto-loads `.env` from the project dir (override with `ENV_FILE`); Docker also
+injects it via `env_file:`. Real environment variables always win over the file. It refuses
+to start if `NTFY_TOPIC`, `LAT`, or `LON` are missing.
 
 ## Tracking a different / additional product
 Change `product.prid` and `product.url` to the new item. To track several at once, copy the
