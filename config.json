@@ -1,0 +1,38 @@
+{
+  "//": "------------------------------------------------------------------",
+  "//product": "The Blinkit product to track. prid is the number at the end of the URL.",
+  "product": {
+    "prid": 480046,
+    "name": "Haringhata Boneless Frozen Chicken Breast",
+    "url": "https://blinkit.com/prn/haringhata-boneless-frozen-chicken-breast/prid/480046"
+  },
+
+  "//location": "YOUR delivery coordinates. Blinkit resolves the serving dark store from these. PASTE YOUR REAL lat/lon HERE (Google Maps: right-click your home -> click the lat,lon to copy). locality can stay as-is; it is only a hint.",
+  "location": {
+    "lat": 22.4842837,
+    "lon": 88.3835654,
+    "locality": "957"
+  },
+
+  "//notify": "ntfy push. Pick any unique topic name (treat it like a password). Install the ntfy app, subscribe to the SAME topic. Leave server as ntfy.sh unless you self-host one.",
+  "notify": {
+    "type": "ntfy",
+    "server": "https://ntfy.sh",
+    "topic": "sama-royal-test-293",
+    "priority": "high",
+    "remindEveryHours": 0
+  },
+
+  "//watch": "Used only in --watch mode. intervalMinutes between checks; jitterSeconds randomizes timing a little so it does not look robotic.",
+  "watch": {
+    "intervalMinutes": 12,
+    "jitterSeconds": 90
+  },
+
+  "//browser": "Leave chromiumPath empty to use Playwright's bundled Chromium (recommended, and what the Docker image uses). On a bare machine where the bundled browser is missing/mismatched, set it to a system chromium, e.g. \"/usr/bin/chromium\". Or set env CHROMIUM_PATH.",
+  "browser": {
+    "chromiumPath": "",
+    "headless": true,
+    "navTimeoutMs": 45000
+  }
+}

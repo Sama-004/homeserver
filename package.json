@@ -1,0 +1,16 @@
+{
+  "name": "chicken-breast-tracker",
+  "version": "1.0.0",
+  "description": "Tracks a Blinkit product's stock at your dark store and pushes an ntfy alert when it's back in stock.",
+  "type": "module",
+  "bin": {
+    "chicken-tracker": "tracker.mjs"
+  },
+  "scripts": {
+    "check": "node tracker.mjs --once",
+    "watch": "node tracker.mjs --watch"
+  },
+  "dependencies": {
+    "playwright": "^1.50.0"
+  }
+}

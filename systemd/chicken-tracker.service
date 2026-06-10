@@ -1,0 +1,17 @@
+# Single-shot check, fired by chicken-tracker.timer. Native (non-Docker) install.
+# Copy both files to /etc/systemd/system/ and edit User + paths below.
+#   sudo cp systemd/chicken-tracker.* /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now chicken-tracker.timer
+[Unit]
+Description=Blinkit chicken breast stock check (one shot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=sama
+WorkingDirectory=/home/sama/projects/chicken-breast-tracker
+# If the bundled Playwright browser is missing on this host, point at system chromium:
+Environment=CHROMIUM_PATH=/usr/bin/chromium
+ExecStart=/usr/bin/node /home/sama/projects/chicken-breast-tracker/tracker.mjs --once

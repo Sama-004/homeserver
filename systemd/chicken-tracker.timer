@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the Blinkit chicken breast stock check every 12 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=12min
+# spread the fire time a little so it's not robotic on the dot
+RandomizedDelaySec=90
+Persistent=true
+
+[Install]
+WantedBy=timers.target

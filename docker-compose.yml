@@ -1,0 +1,16 @@
+services:
+  chicken-tracker:
+    build: .
+    container_name: chicken-breast-tracker
+    restart: unless-stopped
+    # config.json holds your lat/lon + ntfy topic; state.json persists stock state.
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./state.json:/app/state.json
+    # Optional: override secrets via env instead of editing config.json
+    # environment:
+    #   - NTFY_TOPIC=my-secret-topic
+    #   - LAT=22.5726
+    #   - LON=88.3639
+    # A bit of memory headroom for Chromium
+    shm_size: "512mb"
