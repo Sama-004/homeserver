@@ -1,0 +1,30 @@
+name: deploy
+
+# Push to main -> the self-hosted runner on the homeserver redeploys in place.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}        # also lets you trigger a deploy by hand from the Actions tab
+
+# Never run two deploys at once; let an in-flight one finish.
+concurrency:
+  group: deploy-homeserver
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, homeserver]
+    steps:
+      - name: Pull latest and redeploy
+        run: |
+          set -euo pipefail
+          cd "$HOME/chicken-breast-tracker-blinkit"
+          git fetch --prune origin
+          git reset --hard origin/main          # leaves untracked .env / state.json intact
+          [ -f state.json ] || printf '{}\n' > state.json
+          docker compose up -d --build
+          docker image prune -f                 # reclaim disk from the previous image build
+      - name: Show status
+        run: |
+          cd "$HOME/chicken-breast-tracker-blinkit"
+          docker compose ps
