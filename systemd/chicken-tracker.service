@@ -12,6 +12,8 @@ Wants=network-online.target
 Type=oneshot
 User=sama
 WorkingDirectory=/home/sama/projects/chicken-breast-tracker
+# Secrets (NTFY_TOPIC, LAT, LON) come from .env:
+EnvironmentFile=/home/sama/projects/chicken-breast-tracker/.env
 # If the bundled Playwright browser is missing on this host, point at system chromium:
 Environment=CHROMIUM_PATH=/usr/bin/chromium
 ExecStart=/usr/bin/node /home/sama/projects/chicken-breast-tracker/tracker.mjs --once

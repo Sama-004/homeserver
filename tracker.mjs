@@ -19,6 +19,16 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = process.env.CONFIG_PATH || join(HERE, 'config.json');
 const STATE_PATH = process.env.STATE_PATH || join(HERE, 'state.json');
+
+// Secrets (NTFY_TOPIC, LAT, LON) live in .env, not config.json. Auto-load it if present.
+// systemd/Docker may instead inject these via EnvironmentFile/env_file — that's fine,
+// existing process.env always wins over the file.
+const ENV_FILE = process.env.ENV_FILE || join(HERE, '.env');
+try {
+  if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
+} catch (e) {
+  console.error('warning: could not load', ENV_FILE, '-', e.message);
+}
 const UA =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
@@ -33,6 +43,18 @@ function loadConfig() {
   if (process.env.LAT) cfg.location.lat = Number(process.env.LAT);
   if (process.env.LON) cfg.location.lon = Number(process.env.LON);
   if (process.env.CHROMIUM_PATH) cfg.browser.chromiumPath = process.env.CHROMIUM_PATH;
+
+  // These must come from .env (or the environment); they are deliberately blank in config.json.
+  const missing = [];
+  if (!cfg.notify.topic) missing.push('NTFY_TOPIC');
+  if (!Number.isFinite(cfg.location.lat)) missing.push('LAT');
+  if (!Number.isFinite(cfg.location.lon)) missing.push('LON');
+  if (missing.length) {
+    throw new Error(
+      `Missing required secret(s): ${missing.join(', ')}. ` +
+        `Set them in ${ENV_FILE} (copy .env.example) or export them in the environment.`
+    );
+  }
   return cfg;
 }
 

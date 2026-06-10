@@ -24,15 +24,22 @@ So the tracker:
 
 ## Setup
 
-### 1. Set your location
-Edit `config.json` → `location.lat` / `location.lon`. Get them from Google Maps:
-right-click your home → click the `lat, lon` at the top to copy.
+Secrets — your **ntfy topic** and your **lat/lon** (which reveal your home) — live in a
+gitignored **`.env`** file, never in `config.json`.
 
-### 2. Set your ntfy topic
+### 1. Create your `.env`
+```bash
+cp .env.example .env
+```
+Then fill it in:
+- `LAT` / `LON` — your coordinates. Google Maps: right-click your home → click the
+  `lat, lon` at the top to copy.
+- `NTFY_TOPIC` — a long, random, hard-to-guess string (it's your only password on free
+  ntfy.sh — anyone who knows it can read your alerts).
+
+### 2. Set up the ntfy app
 - Install the **ntfy** app (Android/iOS) or use the web app.
-- Pick a unique, hard-to-guess topic name (treat it like a password — anyone who knows it
-  can read your alerts).
-- Put it in `config.json` → `notify.topic`, then **subscribe to the same topic** in the app.
+- Subscribe to the **same** topic string you put in `NTFY_TOPIC`.
 
 ### 3. Verify it's hitting the right store
 ```bash
@@ -82,17 +89,29 @@ node tracker.mjs --watch
 ```
 
 ## Config reference (`config.json`)
+Secrets live in **`.env`** (gitignored), everything else in `config.json`.
+
+`.env`:
+| key | meaning |
+|-----|---------|
+| `NTFY_TOPIC` | ntfy topic — **required**, secret (your only password on free ntfy.sh) |
+| `LAT` / `LON` | **your** coordinates — **required**, private (picks the dark store) |
+| `NTFY_SERVER` | optional, defaults to `https://ntfy.sh` |
+| `CHROMIUM_PATH` | optional, e.g. `/usr/bin/chromium` (also settable in config) |
+
+`config.json` (non-secret):
 | key | meaning |
 |-----|---------|
 | `product.prid` | the number at the end of the Blinkit URL — change to track a different item |
-| `location.lat` / `location.lon` | **your** coordinates → picks the dark store |
-| `notify.topic` | ntfy topic (keep it secret) |
+| `location.locality` | non-sensitive hint only (lat/lon come from `.env`) |
 | `notify.priority` | ntfy priority for the in-stock alert |
 | `notify.remindEveryHours` | re-ping while still in stock (0 = only on transition) |
 | `watch.intervalMinutes` | check frequency in `--watch` mode |
 | `browser.chromiumPath` | leave empty to use Playwright's Chromium; set to e.g. `/usr/bin/chromium` if bundled is missing |
 
-Env overrides (handy for Docker secrets): `NTFY_TOPIC`, `NTFY_SERVER`, `LAT`, `LON`, `CHROMIUM_PATH`, `CONFIG_PATH`, `STATE_PATH`.
+The tracker auto-loads `.env` from the project dir (override with `ENV_FILE`). systemd reads
+it via `EnvironmentFile=`; Docker via `env_file:`. Real environment variables always win over
+the file. It refuses to start if `NTFY_TOPIC`, `LAT`, or `LON` are missing.
 
 ## Tracking a different / additional product
 Change `product.prid` and `product.url` to the new item. To track several at once, copy the

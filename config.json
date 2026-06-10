@@ -7,18 +7,18 @@
     "url": "https://blinkit.com/prn/haringhata-boneless-frozen-chicken-breast/prid/480046"
   },
 
-  "//location": "YOUR delivery coordinates. Blinkit resolves the serving dark store from these. PASTE YOUR REAL lat/lon HERE (Google Maps: right-click your home -> click the lat,lon to copy). locality can stay as-is; it is only a hint.",
+  "//location": "Your coords are SECRET (they reveal your home) -> set LAT / LON in the .env file, NOT here. locality is only a non-sensitive hint.",
   "location": {
-    "lat": 22.4842837,
-    "lon": 88.3835654,
+    "lat": null,
+    "lon": null,
     "locality": "957"
   },
 
-  "//notify": "ntfy push. Pick any unique topic name (treat it like a password). Install the ntfy app, subscribe to the SAME topic. Leave server as ntfy.sh unless you self-host one.",
+  "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
   "notify": {
     "type": "ntfy",
     "server": "https://ntfy.sh",
-    "topic": "sama-royal-test-293",
+    "topic": "",
     "priority": "high",
     "remindEveryHours": 0
   },
