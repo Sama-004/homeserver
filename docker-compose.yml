@@ -6,7 +6,9 @@ services:
     # config.json holds your lat/lon + ntfy topic; state.json persists stock state.
     volumes:
       - ./config.json:/app/config.json:ro
-      - ./state.json:/app/state.json
+      - ./data:/app/data          # directory mount (no single-file EISDIR trap)
+    environment:
+      - STATE_PATH=/app/data/state.json
     # Secrets (NTFY_TOPIC, LAT, LON) are read from .env (gitignored):
     env_file:
       - .env
