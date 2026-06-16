@@ -9,6 +9,7 @@ services:
       - ./data:/app/data          # directory mount (no single-file EISDIR trap)
     environment:
       - STATE_PATH=/app/data/state.json
+      - TZ=Asia/Kolkata          # so heartbeatHour (and the daily reset) use IST
     # Secrets (NTFY_TOPIC, LAT, LON) are read from .env (gitignored):
     env_file:
       - .env

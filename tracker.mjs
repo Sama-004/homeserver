@@ -158,6 +158,41 @@ async function notify(cfg, { title, message, priority, tags, click }) {
   log('ntfy push sent ->', cfg.notify.topic);
 }
 
+// --- daily heartbeat: prove the tracker is alive ----------------------------
+// Sends one low-priority "still watching" push per day, at/after notify.heartbeatHour
+// (local time — set TZ in the container). If you ever STOP getting it, something died.
+async function maybeHeartbeat(cfg) {
+  const hour = cfg.notify.heartbeatHour;
+  if (hour === undefined || hour === null || hour < 0) return; // disabled
+  const now = new Date();
+  if (now.getHours() < hour) return; // not time yet today
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const state = loadState();
+  if (state.lastHeartbeatDate === today) return; // already sent today
+
+  const status =
+    state.inStock === true
+      ? `IN STOCK (inventory ${state.lastInventory})`
+      : state.inStock === false
+        ? 'out of stock'
+        : 'unknown (no successful check yet)';
+  try {
+    await notify(cfg, {
+      title: 'Chicken tracker - still watching',
+      message:
+        `Daily check-in ✅\nLast result: ${status}` +
+        `${state.lastStore ? `\nStore: ${state.lastStore}` : ''}` +
+        `${state.checkedAt ? `\nAt: ${state.checkedAt}` : ''}`,
+      priority: 'low',
+      tags: 'heartbeat',
+    });
+    state.lastHeartbeatDate = today;
+    saveState(state);
+  } catch (e) {
+    log('heartbeat push failed:', e.message);
+  }
+}
+
 // --- one full cycle: check, diff against state, alert -----------------------
 async function runOnce(cfg) {
   let result;
@@ -246,6 +281,7 @@ async function main() {
       }, cycleHardLimitMs);
       try {
         await runOnce(cfg);
+        await maybeHeartbeat(cfg);
       } finally {
         clearTimeout(watchdog);
       }
@@ -257,6 +293,7 @@ async function main() {
 
   // default: single check (for cron / systemd timer)
   await runOnce(cfg);
+  await maybeHeartbeat(cfg);
 }
 
 main().catch((e) => {

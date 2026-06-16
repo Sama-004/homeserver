@@ -20,7 +20,9 @@
     "server": "https://ntfy.sh",
     "topic": "",
     "priority": "high",
-    "remindEveryHours": 0
+    "remindEveryHours": 0,
+    "//heartbeatHour": "Send one low-priority 'still watching' push per day at/after this hour (local time; set TZ in docker-compose). -1 disables. If you ever stop getting it, the tracker is dead.",
+    "heartbeatHour": 9
   },
 
   "//watch": "Used only in --watch mode. intervalMinutes between checks; jitterSeconds randomizes timing a little so it does not look robotic.",
