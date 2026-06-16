@@ -232,10 +232,23 @@ async function main() {
   if (args.includes('--watch')) {
     const everyMs = (cfg.watch.intervalMinutes || 12) * 60_000;
     const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
-    log(`watch mode: every ~${cfg.watch.intervalMinutes}min (+/- ${cfg.watch.jitterSeconds}s)`);
+    // Watchdog: a single cycle should never take long. If one wedges (e.g. a hung
+    // headless browser that never returns and isn't covered by a Playwright timeout),
+    // exit so the container's restart policy hands us a clean process. This turns a
+    // silent multi-hour freeze into a ~minutes-long self-heal.
+    const cycleHardLimitMs = Math.max(120_000, (cfg.browser.navTimeoutMs || 45000) * 3);
+    log(`watch mode: every ~${cfg.watch.intervalMinutes}min (+/- ${cfg.watch.jitterSeconds}s); cycle hard-limit ${Math.round(cycleHardLimitMs / 1000)}s`);
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      await runOnce(cfg);
+      const watchdog = setTimeout(() => {
+        log(`FATAL: check cycle exceeded ${Math.round(cycleHardLimitMs / 1000)}s — wedged; exiting for a clean restart`);
+        process.exit(1);
+      }, cycleHardLimitMs);
+      try {
+        await runOnce(cfg);
+      } finally {
+        clearTimeout(watchdog);
+      }
       const wait = everyMs + Math.floor((Math.random() * 2 - 1) * jitterMs);
       log(`next check in ${Math.round(wait / 1000)}s`);
       await sleep(Math.max(30_000, wait));
