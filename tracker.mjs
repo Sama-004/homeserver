@@ -223,12 +223,14 @@ async function runOnce(cfg) {
   const becameAvailable = result.inStock && wasInStock !== true;
   const remindDue =
     result.inStock &&
-    cfg.notify.remindEveryHours > 0 &&
-    now - (state.lastAlertAt || 0) > cfg.notify.remindEveryHours * 3600_000;
+    cfg.notify.remindEveryMinutes > 0 &&
+    now - (state.lastAlertAt || 0) > cfg.notify.remindEveryMinutes * 60_000;
 
   if (becameAvailable || remindDue) {
     await notify(cfg, {
-      title: `🐔 ${cfg.product.name} is IN STOCK`,
+      title: becameAvailable
+        ? `🐔 ${cfg.product.name} is IN STOCK`
+        : `🐔 Still in stock: ${cfg.product.name}`,
       message:
         `${result.inventory} available${result.price ? ` at ${result.price}` : ''}` +
         `${result.store ? `\nStore: ${result.store}` : ''}\nOrder now 👇`,

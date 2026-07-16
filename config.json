@@ -20,7 +20,8 @@
     "server": "https://ntfy.sh",
     "topic": "",
     "priority": "high",
-    "remindEveryHours": 0,
+    "//remindEveryMinutes": "Keep nagging while it stays IN STOCK: re-ping at most every N minutes. 0 = only alert on the out->in-stock transition. Checks run every ~11-13 min, so any value below ~10 effectively means 'ping on every check'.",
+    "remindEveryMinutes": 10,
     "//heartbeatHour": "Send one low-priority 'still watching' push per day at/after this hour (local time; set TZ in docker-compose). -1 disables. If you ever stop getting it, the tracker is dead.",
     "heartbeatHour": 9
   },

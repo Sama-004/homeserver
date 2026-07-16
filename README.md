@@ -20,7 +20,7 @@ So the tracker:
 4. **In stock** = `inventory > 0 && !is_sold_out`.
 5. On the **out-of-stock → in-stock** transition, it pushes an ntfy alert. It stays quiet
    otherwise (no spam), and won't re-alert while it's still in stock unless you set
-   `notify.remindEveryHours`.
+   `notify.remindEveryMinutes`.
 
 ## Setup
 
@@ -101,7 +101,7 @@ Secrets live in **`.env`** (gitignored), everything else in `config.json`.
 | `product.prid` | the number at the end of the Blinkit URL — change to track a different item |
 | `location.locality` | non-sensitive hint only (lat/lon come from `.env`) |
 | `notify.priority` | ntfy priority for the in-stock alert |
-| `notify.remindEveryHours` | re-ping while still in stock (0 = only on transition) |
+| `notify.remindEveryMinutes` | keep nagging while still in stock, at most every N min (0 = only on transition; <10 ≈ every check) |
 | `watch.intervalMinutes` | check frequency in `--watch` mode |
 | `browser.chromiumPath` | leave empty to use Playwright's Chromium; set to e.g. `/usr/bin/chromium` if bundled is missing |
 
