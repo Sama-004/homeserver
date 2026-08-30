@@ -31,8 +31,9 @@ jobs:
           chmod 600 ~/.ssh/deploy
 
       - name: Pull latest and redeploy on the homeserver
+        # bash -s: the homeserver's login shell is fish, which can't parse this script
         run: |
-          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy "${{ secrets.SSH_TARGET }}" '
+          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy "${{ secrets.SSH_TARGET }}" bash -s <<'EOF'
             set -euo pipefail
             cd ~/trackers
             git fetch --prune origin
@@ -43,4 +44,4 @@ jobs:
             docker compose up -d --build            # cached build: reuses the 2GB base
             docker image prune -f
             docker compose ps
-          '
+          EOF
