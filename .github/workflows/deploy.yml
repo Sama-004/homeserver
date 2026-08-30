@@ -32,7 +32,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy "${{ secrets.SSH_TARGET }}" '
             set -euo pipefail
-            cd ~/chicken-breast-tracker-blinkit
+            cd ~/trackers
             git fetch --prune origin
             git reset --hard origin/main            # leaves untracked .env / */data intact
             # one-time monorepo migration: chicken state used to live in ./data
