@@ -14,6 +14,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # the TS_OAUTH_* and SSH_* secrets live on this environment, not the repo
+    environment: auto deploy homeserver
     steps:
       - name: Join the tailnet
         uses: tailscale/github-action@v3
