@@ -1,0 +1,16 @@
+{
+  "name": "nimas-notifier",
+  "version": "1.0.0",
+  "description": "Watches seat availability for a NIMAS Dirang mountaineering course and pushes ntfy alerts when seats change or run low.",
+  "type": "module",
+  "bin": {
+    "nimas-notifier": "tracker.mjs"
+  },
+  "scripts": {
+    "check": "node tracker.mjs --once",
+    "watch": "node tracker.mjs --watch"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

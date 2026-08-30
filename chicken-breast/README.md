@@ -4,6 +4,9 @@ Polls a **Blinkit** product at *your* dark store and sends an **ntfy push** the 
 back in stock. Built because Blinkit's own "Notify me" doesn't fire. Default target is
 [Haringhata Boneless Frozen Chicken Breast](https://blinkit.com/prn/haringhata-boneless-frozen-chicken-breast/prid/480046).
 
+Part of the [trackers monorepo](../README.md): the `docker compose` commands below run from
+the **repo root**, and the shared `.env` lives there too.
+
 ## How it works (the important part: location)
 
 Blinkit does **not** use your pincode directly and **ignores** the browser geolocation API.
@@ -27,8 +30,9 @@ So the tracker:
 Secrets — your **ntfy topic** and your **lat/lon** (which reveal your home) — live in a
 gitignored **`.env`** file, never in `config.json`.
 
-### 1. Create your `.env`
+### 1. Create your `.env` (repo root, shared by all trackers)
 ```bash
+cd ..                     # repo root
 cp .env.example .env
 ```
 Then fill it in:
@@ -42,9 +46,11 @@ Then fill it in:
 - Subscribe to the **same** topic string you put in `NTFY_TOPIC`.
 
 ### 3. Verify it's hitting the right store
+From this directory (the tracker looks for `.env` next to itself, so point it at the shared
+root one):
 ```bash
 npm install          # installs Playwright + its Chromium
-node tracker.mjs --once
+ENV_FILE=../.env node tracker.mjs --once
 ```
 You'll see a line like:
 ```
@@ -54,19 +60,20 @@ Confirm the store name matches your area. If it's the wrong store, nudge your la
 
 Then test the push:
 ```bash
-node tracker.mjs --test-notify   # should buzz your phone
+ENV_FILE=../.env node tracker.mjs --test-notify   # should buzz your phone
 ```
 
 ## Running it 24/7 on your homeserver (Docker)
 
-Make sure `.env` exists on the homeserver (it's gitignored, so copy it over separately —
-e.g. `scp .env user@homeserver:~/chicken-breast-tracker/`). Needs ~2.5 GB free disk for the
+Deploys ride the monorepo's push-to-`main` workflow (see the [root README](../README.md)) —
+the shared `.env` already lives at the homeserver repo root. Needs ~2.5 GB free disk for the
 Playwright image.
 
+From the repo root:
 ```bash
 docker compose run --rm chicken-tracker node tracker.mjs --test-notify   # confirm push works
-docker compose up -d --build                                             # run 24/7
-docker compose logs -f                                                   # watch it
+docker compose up -d --build chicken-tracker                             # run 24/7
+docker compose logs -f chicken-tracker                                   # watch it
 ```
 
 Runs in `--watch` mode, checking every `watch.intervalMinutes` (default 12). `config.json`,
@@ -75,14 +82,14 @@ restarts itself on reboot (`restart: unless-stopped`).
 
 Day-to-day:
 ```bash
-docker compose ps                 # is it running?
-docker compose logs --tail=50     # recent checks
-docker compose restart            # apply config.json / .env changes
-docker compose down               # stop
+docker compose ps                               # what's running?
+docker compose logs --tail=50 chicken-tracker   # recent checks
+docker compose restart chicken-tracker          # apply config.json / .env changes
+docker compose stop chicken-tracker             # stop just this tracker
 ```
 
 > Running locally for development (no Docker)? `npm install` then
-> `CHROMIUM_PATH=/usr/bin/chromium node tracker.mjs --once`.
+> `ENV_FILE=../.env CHROMIUM_PATH=/usr/bin/chromium node tracker.mjs --once`.
 
 ## Config reference (`config.json`)
 Secrets live in **`.env`** (gitignored), everything else in `config.json`.
@@ -110,9 +117,9 @@ injects it via `env_file:`. Real environment variables always win over the file.
 to start if `NTFY_TOPIC`, `LAT`, or `LON` are missing.
 
 ## Tracking a different / additional product
-Change `product.prid` and `product.url` to the new item. To track several at once, copy the
-folder (or run multiple Docker services) each with its own `config.json` + `state.json` and a
-different ntfy topic.
+Change `product.prid` and `product.url` to the new item. To track several at once, copy this
+directory to a new one and add a service block for it in the root `docker-compose.yml`
+(see ["Adding a new tracker"](../README.md#adding-a-new-tracker)).
 
 ## Notes & gotchas
 - **Be polite.** A 12-minute interval is plenty and stays well under the radar. Don't hammer

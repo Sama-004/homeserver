@@ -34,8 +34,10 @@ jobs:
             set -euo pipefail
             cd ~/chicken-breast-tracker-blinkit
             git fetch --prune origin
-            git reset --hard origin/main            # leaves untracked .env / data intact
-            mkdir -p data
+            git reset --hard origin/main            # leaves untracked .env / */data intact
+            # one-time monorepo migration: chicken state used to live in ./data
+            if [ -d data ] && [ ! -e chicken-breast/data ]; then mv data chicken-breast/data; fi
+            mkdir -p chicken-breast/data nimas/data
             docker compose up -d --build            # cached build: reuses the 2GB base
             docker image prune -f
             docker compose ps
