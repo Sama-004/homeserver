@@ -1,124 +1,71 @@
-# 🐔 Chicken Breast Tracker
+# 📟 Trackers
 
-Polls a **Blinkit** product at *your* dark store and sends an **ntfy push** the moment it's
-back in stock. Built because Blinkit's own "Notify me" doesn't fire. Default target is
-[Haringhata Boneless Frozen Chicken Breast](https://blinkit.com/prn/haringhata-boneless-frozen-chicken-breast/prid/480046).
+A small fleet of "watch a thing on the internet and ping my phone via [ntfy](https://ntfy.sh)"
+trackers, deployed together on the homeserver. Each tracker lives in its own directory and is
+fully self-contained (its own script, config, Dockerfile, README); the root
+`docker-compose.yml` is the only thing that knows about all of them.
 
-## How it works (the important part: location)
+| Tracker | Watches | Docs |
+|---|---|---|
+| [`chicken-breast/`](chicken-breast/) 🐔 | Blinkit stock for frozen chicken breast at my dark store | [README](chicken-breast/README.md) |
+| [`nimas/`](nimas/) 🏔️ | Seat availability for the NIMAS Basic Mountaineering Course (BMC-64) | [README](nimas/README.md) |
 
-Blinkit does **not** use your pincode directly and **ignores** the browser geolocation API.
-It picks your serving **dark store** from a **lat/lon pair stored in the cookies
-`gr_1_lat` / `gr_1_lon`**, which it forwards as `lat`/`lon` headers to its internal API.
+## Layout
 
-So the tracker:
-
-1. Sets `gr_1_lat` / `gr_1_lon` cookies to **your** coordinates.
-2. Loads the product page in headless Chromium (a real browser — this clears Cloudflare,
-   which plain `curl` cannot).
-3. Reads the JSON the page itself fetches from `/v1/layout/product/<prid>`. The product
-   snippet carries `inventory` (a count) and `is_sold_out` (bool).
-4. **In stock** = `inventory > 0 && !is_sold_out`.
-5. On the **out-of-stock → in-stock** transition, it pushes an ntfy alert. It stays quiet
-   otherwise (no spam), and won't re-alert while it's still in stock unless you set
-   `notify.remindEveryMinutes`.
-
-## Setup
-
-Secrets — your **ntfy topic** and your **lat/lon** (which reveal your home) — live in a
-gitignored **`.env`** file, never in `config.json`.
-
-### 1. Create your `.env`
-```bash
-cp .env.example .env
 ```
-Then fill it in:
-- `LAT` / `LON` — your coordinates. Google Maps: right-click your home → click the
-  `lat, lon` at the top to copy.
-- `NTFY_TOPIC` — a long, random, hard-to-guess string (it's your only password on free
-  ntfy.sh — anyone who knows it can read your alerts).
-
-### 2. Set up the ntfy app
-- Install the **ntfy** app (Android/iOS) or use the web app.
-- Subscribe to the **same** topic string you put in `NTFY_TOPIC`.
-
-### 3. Verify it's hitting the right store
-```bash
-npm install          # installs Playwright + its Chromium
-node tracker.mjs --once
-```
-You'll see a line like:
-```
-result: out of stock (inventory=0) @ Super Store Kolkata New Bara Bazar ES79
-```
-Confirm the store name matches your area. If it's the wrong store, nudge your lat/lon.
-
-Then test the push:
-```bash
-node tracker.mjs --test-notify   # should buzz your phone
+.
+├── docker-compose.yml   # one service per tracker — the orchestrator
+├── .env                 # shared secrets (gitignored): NTFY_TOPIC, LAT, LON
+├── chicken-breast/      # each tracker: tracker.mjs + config.json + Dockerfile + README
+│   └── data/            # per-tracker state (gitignored, survives restarts)
+└── nimas/
+    └── data/
 ```
 
-## Running it 24/7 on your homeserver (Docker)
+All trackers push to the same `NTFY_TOPIC`, so one phone subscription gets everything —
+titles/emoji tell them apart. Want separate topics? Give a service its own
+`environment: NTFY_TOPIC=...` override in `docker-compose.yml`.
 
-Make sure `.env` exists on the homeserver (it's gitignored, so copy it over separately —
-e.g. `scp .env user@homeserver:~/chicken-breast-tracker/`). Needs ~2.5 GB free disk for the
-Playwright image.
+## Running (from the repo root)
 
 ```bash
-docker compose run --rm chicken-tracker node tracker.mjs --test-notify   # confirm push works
-docker compose up -d --build                                             # run 24/7
-docker compose logs -f                                                   # watch it
+cp .env.example .env                   # then fill it in (see each tracker's README)
+docker compose up -d --build           # run ALL trackers
+docker compose up -d --build nimas-notifier   # ...or just one service
+docker compose logs -f                 # watch everything (add a service name to filter)
+docker compose ps
+docker compose restart chicken-tracker # apply config/.env changes to one tracker
+docker compose down                    # stop everything
 ```
 
-Runs in `--watch` mode, checking every `watch.intervalMinutes` (default 12). `config.json`,
-`state.json`, and `.env` are wired in, so it remembers stock state across restarts and
-restarts itself on reboot (`restart: unless-stopped`).
+One-off checks / test pushes (see each tracker's README for its flags):
 
-Day-to-day:
 ```bash
-docker compose ps                 # is it running?
-docker compose logs --tail=50     # recent checks
-docker compose restart            # apply config.json / .env changes
-docker compose down               # stop
+docker compose run --rm nimas-notifier node tracker.mjs --test-notify
+docker compose run --rm chicken-tracker node tracker.mjs --once
 ```
 
-> Running locally for development (no Docker)? `npm install` then
-> `CHROMIUM_PATH=/usr/bin/chromium node tracker.mjs --once`.
+Local dev without Docker: `cd` into the tracker's directory and run it there. Note each
+tracker auto-loads `.env` from *its own* directory, not the repo root — so point it at the
+shared one with `ENV_FILE=../.env node tracker.mjs --once` (or symlink:
+`ln -s ../.env chicken-breast/.env`).
 
-## Config reference (`config.json`)
-Secrets live in **`.env`** (gitignored), everything else in `config.json`.
+## Deploys
 
-`.env`:
-| key | meaning |
-|-----|---------|
-| `NTFY_TOPIC` | ntfy topic — **required**, secret (your only password on free ntfy.sh) |
-| `LAT` / `LON` | **your** coordinates — **required**, private (picks the dark store) |
-| `NTFY_SERVER` | optional, defaults to `https://ntfy.sh` |
-| `CHROMIUM_PATH` | optional, e.g. `/usr/bin/chromium` (also settable in config) |
+Push to `main` → GitHub Actions joins the tailnet and redeploys **all** trackers on the
+homeserver in place (`.github/workflows/deploy.yml`). State in each `*/data/` and the root
+`.env` are untracked and survive deploys.
 
-`config.json` (non-secret):
-| key | meaning |
-|-----|---------|
-| `product.prid` | the number at the end of the Blinkit URL — change to track a different item |
-| `location.locality` | non-sensitive hint only (lat/lon come from `.env`) |
-| `notify.priority` | ntfy priority for the in-stock alert |
-| `notify.remindEveryMinutes` | keep nagging while still in stock, at most every N min (0 = only on transition; <10 ≈ every check) |
-| `watch.intervalMinutes` | check frequency in `--watch` mode |
-| `browser.chromiumPath` | leave empty to use Playwright's Chromium; set to e.g. `/usr/bin/chromium` if bundled is missing |
+## Adding a new tracker
 
-The tracker auto-loads `.env` from the project dir (override with `ENV_FILE`); Docker also
-injects it via `env_file:`. Real environment variables always win over the file. It refuses
-to start if `NTFY_TOPIC`, `LAT`, or `LON` are missing.
-
-## Tracking a different / additional product
-Change `product.prid` and `product.url` to the new item. To track several at once, copy the
-folder (or run multiple Docker services) each with its own `config.json` + `state.json` and a
-different ntfy topic.
-
-## Notes & gotchas
-- **Be polite.** A 12-minute interval is plenty and stays well under the radar. Don't hammer
-  it every few seconds.
-- If checks start failing with Cloudflare blocks, bump the interval and make sure your
-  homeserver IP isn't on a VPN/datacenter range.
-- The internal API shape can change; the parser fails *safe* — on any parse error it logs and
-  leaves state unchanged rather than firing a false alert.
-- Eat your protein. 💪
+1. Copy the shape of an existing one into a new directory: `tracker.mjs` (CLI:
+   `--once` / `--watch` / `--test-notify`), `config.json` for non-secrets, state via
+   `STATE_PATH`, secrets from the environment. `nimas/` is the minimal zero-dependency
+   template (plain `fetch`); `chicken-breast/` is the "site needs a real browser" variant
+   (Playwright).
+2. Keep the conventions: fail **safe** on scrape/parse errors (log and leave state
+   unchanged, never a false alert), a daily heartbeat push so silence means something is
+   broken, and a wedge-watchdog that exits so Docker's restart policy self-heals.
+3. Add a service block for it in `docker-compose.yml` (build context = its directory,
+   mount its `config.json` read-only and its `data/` for state).
+4. Push to `main` — the deploy workflow picks it up.

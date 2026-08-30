@@ -1,17 +1,32 @@
+# One service per tracker. Each tracker is self-contained in its own directory;
+# this file is the only place that knows about all of them.
+# Secrets (NTFY_TOPIC, LAT, LON) live in the shared root .env (gitignored).
 services:
   chicken-tracker:
-    build: .
+    build: ./chicken-breast
     container_name: chicken-breast-tracker
     restart: unless-stopped
-    # config.json holds your lat/lon + ntfy topic; state.json persists stock state.
     volumes:
-      - ./config.json:/app/config.json:ro
-      - ./data:/app/data          # directory mount (no single-file EISDIR trap)
+      - ./chicken-breast/config.json:/app/config.json:ro
+      - ./chicken-breast/data:/app/data # directory mount (no single-file EISDIR trap)
     environment:
       - STATE_PATH=/app/data/state.json
-      - TZ=Asia/Kolkata          # so heartbeatHour (and the daily reset) use IST
-    # Secrets (NTFY_TOPIC, LAT, LON) are read from .env (gitignored):
+      - TZ=Asia/Kolkata # so heartbeatHour (and the daily reset) use IST
     env_file:
       - .env
     # A bit of memory headroom for Chromium
     shm_size: "512mb"
+
+  nimas-notifier:
+    build: ./nimas
+    container_name: nimas-notifier
+    restart: unless-stopped
+    volumes:
+      - ./nimas/config.json:/app/config.json:ro
+      - ./nimas/data:/app/data
+    environment:
+      - STATE_PATH=/app/data/state.json
+      - TZ=Asia/Kolkata # dailyHour is local time
+    env_file:
+      - .env
+    # no shm_size needed: no Chromium, plain fetch

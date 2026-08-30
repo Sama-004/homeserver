@@ -1,0 +1,38 @@
+{
+  "//": "------------------------------------------------------------------",
+  "//course": "The NIMAS course to watch. serialNo is the exact \"Serial No\" cell in the site's course table and is what we match on.",
+  "course": {
+    "serialNo": "BMC-64",
+    "name": "Basic Mountaineering Course (BMC)",
+    "url": "https://www.nimasdirang.com/Mountaineering-courses"
+  },
+
+  "//api": "The ERP backend the nimasdirang.com React app calls to fill its course table. authToken is NOT a secret: it is the site's own public constant (REACT_APP_BASE_AUTHKEY), shipped in its JS bundle to every visitor. templateID 3 = the courses table; categoryName is the server-side filter.",
+  "api": {
+    "url": "https://apierp.azurewebsites.net/api/api/getTemplateDataList",
+    "authToken": "oq+R3B3lt5I1bybDbHvscBRQDkBF8ek9cciW21c2Lza9XNAKeGE13bKO1giqxZ/uL2fM+m2QLjbSkMpBo3qM9DqDqDv7SojZA+5WpHVMh+tsnC9HUXan4CKJ8/bI4/2Lqa7DMzLXd1LqL9KA1iuY8g==",
+    "templateID": 3,
+    "categoryName": "Mountaineering",
+    "timeoutMs": 30000
+  },
+
+  "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
+  "notify": {
+    "type": "ntfy",
+    "server": "https://ntfy.sh",
+    "topic": "",
+    "priority": "high",
+    "//dailyHour": "Send one summary push per day at/after this hour (local time; set TZ in docker-compose). This is both your daily reminder and the proof-of-life heartbeat. -1 disables. If you ever stop getting it, the tracker is dead.",
+    "dailyHour": 9,
+    "//urgentThreshold": "Below this many remaining seats we enter URGENT mode: high-priority nags until you book. 0 seats is not urgent, it is sold out.",
+    "urgentThreshold": 20,
+    "//urgentRemindMinutes": "In urgent mode, re-ping at most every N minutes. 55 is deliberately just under the 60-minute check interval so every hourly check nags.",
+    "urgentRemindMinutes": 55
+  },
+
+  "//watch": "Used only in --watch mode. intervalMinutes between checks (60 = hourly, which is what urgent mode's 55-minute nag assumes); jitterSeconds randomizes timing a little so it does not look robotic.",
+  "watch": {
+    "intervalMinutes": 60,
+    "jitterSeconds": 120
+  }
+}
