@@ -17,8 +17,13 @@ put() {
 }
 
 echo "== packages"
-apt-get install -y -qq unattended-upgrades needrestart >/dev/null
-echo "ok       unattended-upgrades needrestart"
+# unattended-upgrades/needrestart: auto updates. The rest are what the neovim config
+# (~/.config/nvim, kickstart-based) needs at runtime: a C compiler for treesitter
+# parsers, unzip for mason downloads, ripgrep + fd for telescope. nvim itself is
+# installed per-user under ~/.local/opt (no sudo; see system/README.md).
+PKGS="unattended-upgrades needrestart build-essential unzip ripgrep fd-find"
+apt-get install -y -qq $PKGS >/dev/null
+echo "ok       $PKGS"
 
 echo "== apt: automatic updates + nightly reboot"
 put "$HERE/apt/20auto-upgrades"       /etc/apt/apt.conf.d/20auto-upgrades

@@ -33,6 +33,15 @@ ssh hp 'ls /var/run/reboot-required 2>/dev/null; uptime'                    # pe
 ssh hp 'systemctl list-timers apt-daily*'                                   # timers alive?
 ```
 
+## Things installed per-user (no sudo, not in install.sh)
+
+- **neovim** lives at `~/.local/opt/nvim-linux-x86_64` (official release tarball), symlinked
+  to `~/.local/bin/nvim`, because Ubuntu 24.04's packaged neovim is 0.9.5 and the config
+  needs 0.10+. To bump it: re-download the tarball into `~/.local/opt` and re-point the
+  symlink. The config is a checkout of the dots repo at `~/.config/nvim`; `install.sh`
+  provides the apt-level tools it needs (compiler, unzip, ripgrep, fd).
+- **fish** aliases (`nv`, `gst`, `gp`, ...) are in `~/.config/fish/config.fish`.
+
 ## Adding more host config
 
 Drop the file under `system/<thing>/`, add a `put` line in [`install.sh`](install.sh), rerun
