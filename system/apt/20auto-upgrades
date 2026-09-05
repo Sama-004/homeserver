@@ -1,0 +1,6 @@
+// Managed by the homeserver repo (system/apt/) — edit there, then `sudo system/install.sh`.
+// Turns on the apt-daily / apt-daily-upgrade systemd timers.
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";

@@ -2,6 +2,9 @@ name: deploy
 
 # Push to main -> an ephemeral GitHub-hosted runner joins the tailnet over Tailscale,
 # SSHes into the homeserver, and redeploys in place (cached Docker build).
+#
+# This only handles the app stacks (trackers/). Host-level config under system/ needs
+# root, so it's applied by hand: `ssh -t hp 'sudo ~/homeserver/system/install.sh'`.
 on:
   push:
     branches: [main]
@@ -35,11 +38,21 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/deploy "${{ secrets.SSH_TARGET }}" bash -s <<'EOF'
             set -euo pipefail
-            cd ~/trackers
+            # one-time: the checkout used to live at ~/trackers, before the repo became "homeserver"
+            if [ -d ~/trackers ] && [ ! -d ~/homeserver ]; then mv ~/trackers ~/homeserver; fi
+            cd ~/homeserver
             git fetch --prune origin
             git reset --hard origin/main            # leaves untracked .env / */data intact
-            # one-time monorepo migration: chicken state used to live in ./data
-            if [ -d data ] && [ ! -e chicken-breast/data ]; then mv data chicken-breast/data; fi
+
+            # one-time: trackers moved from the repo root into trackers/. git only removes
+            # tracked files, so the untracked .env and state dirs are still at the old paths.
+            if [ -f .env ] && [ ! -e trackers/.env ]; then mv .env trackers/.env; fi
+            for t in chicken-breast nimas; do
+              if [ -d "$t/data" ] && [ ! -e "trackers/$t/data" ]; then mv "$t/data" "trackers/$t/data"; fi
+              if [ -d "$t" ]; then rmdir "$t" 2>/dev/null || true; fi
+            done
+
+            cd trackers
             mkdir -p chicken-breast/data nimas/data
             docker compose up -d --build            # cached build: reuses the 2GB base
             docker image prune -f

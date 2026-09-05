@@ -1,0 +1,38 @@
+// Managed by the homeserver repo (system/apt/) — edit there, then `sudo system/install.sh`.
+//
+// Ubuntu's stock config only auto-installs *security* updates; everything else (the
+// -updates pocket, Docker, Tailscale) piled up and the machine never rebooted for new
+// kernels. This applies all of it and reboots once a night if a reboot is pending.
+
+Unattended-Upgrade::Allowed-Origins {
+    "${distro_id}:${distro_codename}";
+    "${distro_id}:${distro_codename}-security";
+    "${distro_id}ESMApps:${distro_codename}-apps-security";
+    "${distro_id}ESM:${distro_codename}-infra-security";
+    "${distro_id}:${distro_codename}-updates";
+};
+
+// Third-party apt repos on this box (keys as printed by `apt-cache policy`: o=origin, a=archive, n=codename)
+Unattended-Upgrade::Origins-Pattern {
+    "o=Docker,a=${distro_codename}";
+    "o=Tailscale,n=${distro_codename}";
+};
+
+Unattended-Upgrade::Package-Blacklist {
+};
+
+// Don't leave old kernels / orphaned deps lying around (the disk is small)
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+
+// Reboot when /var/run/reboot-required appears (kernel, libc, ...), even if someone is
+// logged in over SSH. The host clock is UTC, so 22:30 = 04:00 IST.
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+Unattended-Upgrade::Automatic-Reboot-Time "22:30";
+
+// Install packages one at a time so a shutdown mid-run can't leave dpkg half-done
+Unattended-Upgrade::MinimalSteps "true";
+Unattended-Upgrade::SyslogEnable "true";
+Unattended-Upgrade::DevRelease "auto";
