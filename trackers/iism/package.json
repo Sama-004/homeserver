@@ -1,0 +1,17 @@
+{
+  "name": "iism-notifier",
+  "version": "1.0.0",
+  "description": "Watches iismgulmarg.in for snow-skiing course schedules and booking dates and pushes ntfy alerts + booking-time reminders.",
+  "type": "module",
+  "bin": {
+    "iism-notifier": "tracker.mjs"
+  },
+  "scripts": {
+    "check": "node tracker.mjs --once",
+    "watch": "node tracker.mjs --watch",
+    "dump": "node tracker.mjs --dump"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

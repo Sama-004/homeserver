@@ -18,7 +18,8 @@ Each top-level directory is one independent thing; the only shared pieces are th
 │   ├── docker-compose.yml
 │   ├── .env                       # gitignored secrets (NTFY_TOPIC, LAT, LON)
 │   ├── chicken-breast/
-│   └── nimas/
+│   ├── nimas/
+│   └── iism/
 └── system/                        # files copied into /etc by system/install.sh
     ├── install.sh
     ├── apt/

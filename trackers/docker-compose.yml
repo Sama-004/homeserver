@@ -30,3 +30,17 @@ services:
     env_file:
       - .env
     # no shm_size needed: no Chromium, plain fetch
+
+  iism-notifier:
+    build: ./iism
+    container_name: iism-notifier
+    restart: unless-stopped
+    volumes:
+      - ./iism/config.json:/app/config.json:ro
+      - ./iism/data:/app/data
+    environment:
+      - STATE_PATH=/app/data/state.json
+      - TZ=Asia/Kolkata # dailyHour + parsed booking times ("10:00 AM") are IST
+    env_file:
+      - .env
+    # no shm_size needed: no Chromium, plain fetch

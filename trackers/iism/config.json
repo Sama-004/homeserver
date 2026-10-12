@@ -1,0 +1,40 @@
+{
+  "//": "------------------------------------------------------------------",
+  "//site": "The IISM Gulmarg pages to watch. All three carry the same site-wide popup (the 'Bookings will open ...' banner + 'Courses opening' table); home also has the 'Latest updates' ticker, Courses_By_IISM has the per-course sections (and last season's snow-skiing table, commented out). applyUrl is the admission portal (mobile-OTP gated, so we only link to it).",
+  "site": {
+    "pages": [
+      { "name": "home", "url": "https://www.iismgulmarg.in/" },
+      { "name": "courses", "url": "https://www.iismgulmarg.in/Courses_By_IISM" },
+      { "name": "calendar", "url": "https://www.iismgulmarg.in/course_Schedule" }
+    ],
+    "coursesUrl": "https://www.iismgulmarg.in/Courses_By_IISM",
+    "applyUrl": "https://admission.iismgulmarg.in/Admission_instructions.aspx",
+    "timeoutMs": 30000
+  },
+
+  "//match": "A visible line counts as ski news if it matches skiPattern after everything matching ignorePattern is blanked out. ignorePattern drops water skiing; skiPattern deliberately does NOT match the institute's own name ('Institute of Skiing & Mountaineering').",
+  "match": {
+    "skiPattern": "snow[\\s-]*(ski|board)|\\bski(ing)?[\\s-]+(course|batch|training)|\\b(basic|intermediate|advanced?)\\s+(ski|snow)",
+    "ignorePattern": "water[\\s-]*ski\\w*"
+  },
+
+  "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
+  "notify": {
+    "type": "ntfy",
+    "server": "https://ntfy.sh",
+    "topic": "",
+    "priority": "high",
+    "//dailyHour": "Send one quiet (min priority) check-in push per day at/after this hour (local time; set TZ in docker-compose). It is the proof-of-life heartbeat. -1 disables.",
+    "dailyHour": 9,
+    "//reminderMinutesBefore": "When a booking date/time is announced (popup banner, or a new ski section), push urgent reminders this many minutes before it. 0 = 'bookings are open now'.",
+    "reminderMinutesBefore": [60, 10, 0],
+    "//failureAlertHours": "If every check fails for this long, push one warning (reset on the next good check).",
+    "failureAlertHours": 6
+  },
+
+  "//watch": "Used only in --watch mode. intervalMinutes between checks; booking reminders wake the loop early on their own. jitterSeconds randomizes timing a little so it does not look robotic.",
+  "watch": {
+    "intervalMinutes": 60,
+    "jitterSeconds": 120
+  }
+}
