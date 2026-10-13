@@ -1,20 +1,20 @@
 {
   "//": "------------------------------------------------------------------",
-  "//site": "The IISM Gulmarg pages to watch. All three carry the same site-wide popup (the 'Bookings will open ...' banner + 'Courses opening' table); home also has the 'Latest updates' ticker, Courses_By_IISM has the per-course sections (and last season's snow-skiing table, commented out). applyUrl is the admission portal (mobile-OTP gated, so we only link to it).",
+  "//site": "The IISM Gulmarg pages to watch. All three carry the same site-wide popup (the 'Bookings will open ...' banner + 'Courses opening' table); home also has the 'Latest updates' ticker, Courses_By_IISM has the per-course sections (#snowski2026 = the snow-skiing schedule); Course_Schedule has the same ski schedule. In Oct 2026 the site moved every page to a .html URL (the extensionless ones now 404). applyUrl is the admission portal (mobile-OTP gated, so we only link to it).",
   "site": {
     "pages": [
       { "name": "home", "url": "https://www.iismgulmarg.in/" },
-      { "name": "courses", "url": "https://www.iismgulmarg.in/Courses_By_IISM" },
-      { "name": "calendar", "url": "https://www.iismgulmarg.in/course_Schedule" }
+      { "name": "courses", "url": "https://www.iismgulmarg.in/Courses_By_IISM.html" },
+      { "name": "calendar", "url": "https://www.iismgulmarg.in/Course_Schedule.html" }
     ],
-    "coursesUrl": "https://www.iismgulmarg.in/Courses_By_IISM",
+    "coursesUrl": "https://www.iismgulmarg.in/Courses_By_IISM.html",
     "applyUrl": "https://admission.iismgulmarg.in/Admission_instructions.aspx",
     "timeoutMs": 30000
   },
 
-  "//match": "A visible line counts as ski news if it matches skiPattern after everything matching ignorePattern is blanked out. ignorePattern drops water skiing; skiPattern deliberately does NOT match the institute's own name ('Institute of Skiing & Mountaineering').",
+  "//match": "A visible line counts as ski news if it matches skiPattern after everything matching ignorePattern is blanked out. ignorePattern drops water skiing; SSC = Snow Skiing Course (the schedule rows say 'Basic SSC: 50'); skiPattern deliberately does NOT match the institute's own name ('Institute of Skiing & Mountaineering').",
   "match": {
-    "skiPattern": "snow[\\s-]*(ski|board)|\\bski(ing)?[\\s-]+(course|batch|training)|\\b(basic|intermediate|advanced?)\\s+(ski|snow)",
+    "skiPattern": "snow[\\s-]*(ski|board)|\\bski(ing)?[\\s-]+(course|batch|training)|\\b(basic|intermediate|advanced?)\\s+(ski|snow|ssc)\\b|\\bssc\\b|basic,?\\s+intermediate",
     "ignorePattern": "water[\\s-]*ski\\w*"
   },
 

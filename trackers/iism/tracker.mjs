@@ -152,11 +152,14 @@ function parsePage(html) {
   [visible, cut] = cutByClass(visible, 'd-none');
   hidden.push(...cut);
 
-  const ann = /<p\b[^>]*class="[^"]*\bblink-text\b[^"]*"[^>]*>([\s\S]*?)<\/p>/i.exec(visible);
+  // The red blinking text is how IISM announces booking dates: the popup's <p> in July,
+  // a <b> inside the ticker item for the Oct 2026 ski schedule. Take every one of them.
+  const blinkRe = /<([a-z][a-z0-9]*)\b[^>]*class="[^"]*\bblink-text\b[^"]*"[^>]*>([\s\S]*?)<\/\1>/gi;
+  const banners = [...visible.matchAll(blinkRe)].map((m) => toLines(m[2]).join(' ')).filter(Boolean);
   return {
     lines: toLines(visible),
     hiddenLines: hidden.flatMap(toLines),
-    announcement: ann ? toLines(ann[1]).join(' ') : null,
+    banners,
   };
 }
 
@@ -179,10 +182,15 @@ function parseBookingTime(text) {
   if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return null;
 
   let hh = 10, mm = 0, assumed = true; // every IISM opening so far has been 10:00 AM
-  const t = /\b(\d{1,2})(?:[:.](\d{2}))?\s*([ap])\.?\s*m\b/i.exec(text.slice(m.index + m[0].length));
-  if (t) {
+  const rest = text.slice(m.index + m[0].length);
+  let t;
+  if ((t = /\b(\d{1,2})(?:[:.](\d{2}))?\s*([ap])\.?\s*m\b/i.exec(rest))) {
     hh = (+t[1] % 12) + (t[3].toLowerCase() === 'p' ? 12 : 0);
     mm = +(t[2] || 0);
+    assumed = false;
+  } else if ((t = /\b([01]?\d|2[0-3])[:.]([0-5]\d)\b/.exec(rest))) {
+    // "10:00 HRS" (how the ski schedule writes it) or plain 24h
+    [hh, mm] = [+t[1], +t[2]];
     assumed = false;
   }
   return { at: new Date(y, mo - 1, d, hh, mm).getTime(), assumed };
@@ -213,13 +221,25 @@ async function fetchPage(cfg, url) {
   }
 }
 
+// One page 404ing (the site renamed its URLs in Oct 2026) must not blind the tracker to
+// the others: failed pages come back in `failed`, and only an all-pages failure throws.
 async function scrape(cfg) {
   const pages = {};
-  for (const p of cfg.site.pages) pages[p.name] = parsePage(await fetchPage(cfg, p.url));
+  const failed = {};
+  for (const p of cfg.site.pages) {
+    try {
+      pages[p.name] = parsePage(await fetchPage(cfg, p.url));
+    } catch (e) {
+      failed[p.name] = e.message;
+    }
+  }
+  if (!Object.keys(pages).length) throw new Error(Object.values(failed).join('; '));
   const all = Object.values(pages);
+  const banners = uniq(all.flatMap((p) => p.banners));
   return {
     pages,
-    announcement: all.find((p) => p.announcement)?.announcement ?? null,
+    failed,
+    announcement: banners.length ? banners.join(' / ') : null,
     skiVisible: uniq(all.flatMap((p) => p.lines).filter((l) => isSki(cfg, l))),
     hiddenSki: uniq(all.flatMap((p) => p.hiddenLines).filter((l) => isSki(cfg, l))),
   };
@@ -315,7 +335,7 @@ async function maybeDailySummary(cfg, result, state, now) {
   const pending = state.reminders.filter((r) => !r.sent && r.before === 0);
   // Only ski lines carrying a year are a schedule; the rest is static boilerplate
   // ("Snow Skiing Course by IISM at Gulmarg." in the ticker, the about-us blurb, ...).
-  const dated = result.skiVisible.filter((l) => /\b20\d\d\b/.test(l));
+  const dated = result.skiVisible.filter((l) => /\b20\d\d\b|\b\d{1,2}\s*(st|nd|rd|th)?\s+[a-z]{3}/i.test(l));
   const lines = [
     dated.length
       ? `Snow-skiing schedule on the site:\n${dated.map((l) => `• ${l}`).join('\n')}`
@@ -356,7 +376,7 @@ async function runOnce(cfg) {
       log(`check attempt ${attempt} failed:`, e.message);
       if (attempt === 2) {
         log('giving up this cycle (state unchanged, no alert)');
-        await maybeFailureAlert(cfg, state, e.message);
+        await trackFailures(cfg, state, { all: e.message });
         saveState(state);
         return;
       }
@@ -364,8 +384,14 @@ async function runOnce(cfg) {
     }
   }
   now = Date.now();
-  state.failingSince = null;
-  state.failureAlerted = false;
+  await trackFailures(cfg, state, result.failed);
+  const partial = Object.keys(result.failed).length > 0;
+  if (partial) {
+    // A missing page's banner / hidden lines would look "removed" — keep the old ones.
+    log(`partial check, failed: ${JSON.stringify(result.failed)}`);
+    result.announcement ??= state.announcement;
+    result.hiddenSki = state.hiddenSki;
+  }
 
   const firstEver = !state.pages;
   const prevVisible = new Set(Object.values(state.pages || {}).flat().map(norm));
@@ -439,31 +465,42 @@ async function runOnce(cfg) {
 
   await maybeDailySummary(cfg, result, state, now);
 
-  state.pages = Object.fromEntries(Object.entries(result.pages).map(([k, p]) => [k, p.lines]));
+  // keep the last good lines of any page that failed this time, so it doesn't re-alert on recovery
+  state.pages = { ...state.pages, ...Object.fromEntries(Object.entries(result.pages).map(([k, p]) => [k, p.lines])) };
   state.hiddenSki = result.hiddenSki;
   state.announcement = result.announcement;
+  delete state.failingSince; // pre-per-page-failures state fields
+  delete state.failureAlerted;
   state.checkedAt = new Date().toISOString();
   saveState(state);
 }
 
-// Silence is ambiguous (nothing new vs. tracker broken), so if checks keep failing for
-// a while, say so once. Reset on the next successful check.
-async function maybeFailureAlert(cfg, state, err) {
+// Silence is ambiguous (nothing new vs. tracker broken), so if a page (or everything)
+// keeps failing for a while, say so once per page. Reset when that page works again.
+async function trackFailures(cfg, state, failed) {
   const now = Date.now();
-  state.failingSince ||= now;
-  const hours = cfg.notify.failureAlertHours ?? 6;
-  if (state.failureAlerted || now - state.failingSince < hours * 3_600_000) return;
-  try {
-    await notify(cfg, {
-      title: '⚠️ IISM tracker failing',
-      message: `Checks have failed for ${Math.round((now - state.failingSince) / 3_600_000)}h.\nLast error: ${err}\nCheck the site / Instagram manually meanwhile.`,
-      priority: 'default',
-      tags: 'warning',
-      click: cfg.site.coursesUrl,
-    });
-    state.failureAlerted = true;
-  } catch (e) {
-    log('failure alert push failed:', e.message);
+  const prev = state.failures || {};
+  state.failures = {};
+  for (const [name, err] of Object.entries(failed)) {
+    const f = (state.failures[name] = prev[name] || { since: now, alerted: false });
+    const hours = cfg.notify.failureAlertHours ?? 6;
+    if (f.alerted || now - f.since < hours * 3_600_000) continue;
+    const url = cfg.site.pages.find((p) => p.name === name)?.url;
+    try {
+      await notify(cfg, {
+        title: name === 'all' ? '⚠️ IISM tracker failing' : `⚠️ IISM tracker: ${name} page failing`,
+        message:
+          `Failing for ${Math.round((now - f.since) / 3_600_000)}h${url ? ` (${url})` : ''}.\nLast error: ${err}\n` +
+          (/HTTP 404/.test(err) ? 'A 404 usually means the site renamed the page — update site.pages in config.json.\n' : '') +
+          'Check the site / Instagram manually meanwhile.',
+        priority: 'default',
+        tags: 'warning',
+        click: url || cfg.site.coursesUrl,
+      });
+      f.alerted = true;
+    } catch (e) {
+      log('failure alert push failed:', e.message);
+    }
   }
 }
 
@@ -478,6 +515,7 @@ async function main() {
       console.log(`\n=== ${name}: ${p.lines.length} visible lines, ${p.hiddenLines.length} hidden ===`);
       p.lines.forEach((l) => console.log(`${isSki(cfg, l) ? '🎿' : '  '} ${l}`));
     }
+    if (Object.keys(r.failed).length) console.log(`\n=== FAILED ===\n${JSON.stringify(r.failed, null, 2)}`);
     console.log(`\n=== banner ===\n${r.announcement}`);
     const parsed = r.announcement && parseBookingTime(r.announcement);
     console.log(`parsed booking time: ${parsed ? fmtWhen(parsed.at) + (parsed.assumed ? ' (time assumed)' : '') : '-'}`);

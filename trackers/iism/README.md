@@ -17,19 +17,26 @@ The site is plain server-rendered HTML (no API, no JS rendering), so this is a z
 | page | why |
 |---|---|
 | `/` (home) | the **"Latest updates"** ticker, plus the site-wide popup |
-| `/Courses_By_IISM` | the per-course sections. Last season's snow-skiing table is **commented out** in the HTML here |
-| `/course_Schedule` | the "courses calendar" page |
+| `/Courses_By_IISM.html` | the per-course sections. `#snowski2026` is the snow-skiing schedule |
+| `/Course_Schedule.html` | the same snow-skiing schedule + the "courses opening" table |
 
-All three carry the same **popup** that opens on page load: a red banner line ("📢 Bookings
-will open tomorrow i.e. 14/07/2026 at 10:00 AM") above a "Courses opening" table.
+In Oct 2026 the site moved every page to a `.html` URL, and the old extensionless ones now
+404. If a page 404s again, update `site.pages`.
+
+IISM announces booking dates in **red blinking text** (`class="blink-text"`). In July it was
+the popup's banner line ("📢 Bookings will open tomorrow i.e. 14/07/2026 at 10:00 AM"). For
+the ski schedule it's in the ticker item, the popup and the section ("BOOKING DATE: 12TH
+NOVEMBER 2026 AT 10:00 HRS"). The tracker treats all blink-text on the site together as
+"the banner".
 
 Each page becomes a list of *visible* text lines (one per table row / list item / heading /
 paragraph). It keeps HTML comments and `d-none` blocks separately as *hidden* lines. Each
 run is compared with the previous one in `data/state.json`.
 
-**Fail-safe:** if a fetch fails, or a page doesn't look like the IISM site (error page,
-maintenance stub), it retries once and then leaves state **unchanged** without alerting. It
-never reports "everything changed" because of a broken response.
+**Fail-safe:** a page that fails to fetch, or doesn't look like the IISM site (error page,
+maintenance stub, 404), is skipped. The other pages are still checked, and the failed page
+keeps its last good snapshot, so it never reports "everything changed" because of a broken
+response. Only if *every* page fails is the whole cycle given up (after one retry).
 
 ## What it pushes
 
@@ -41,7 +48,7 @@ never reports "everything changed" because of a broken response.
 | 👀 **Hint** | default | **hidden** ski content changed, e.g. someone edits the commented-out snow-skiing table to 2026-27 dates before publishing it |
 | 🆕 **Site updated** | low | any other newly visible line (ticker items, course rows) |
 | 🏔️ **Daily check-in** | min | once a day at `notify.dailyHour`: is a snow-skiing schedule up yet, the current banner, any pending reminders. This is the **heartbeat**: if it stops arriving, the tracker is dead |
-| ⚠️ **Failing** | default | every check has failed for `failureAlertHours` (one push, reset on the next good check) |
+| ⚠️ **Failing** | default | a page (or the whole check) has failed for `failureAlertHours`. One push per page, reset when it works again |
 
 One cycle sends **one** combined push, titled by its strongest signal. Pushes have
 **Apply page** / **Courses** buttons. The apply portal needs mobile OTP, so log in there
@@ -84,17 +91,17 @@ docker compose logs -f iism-notifier
 | `match.ignorePattern` | blanked out before matching (default: water skiing) |
 | `notify.dailyHour` | hour (local) for the daily check-in / heartbeat. `-1` disables |
 | `notify.reminderMinutesBefore` | booking reminder offsets, default `[60, 10, 0]` |
-| `notify.failureAlertHours` | warn once after this many hours of failed checks |
+| `notify.failureAlertHours` | warn once per page after this many hours of failures |
 | `watch.intervalMinutes` / `watch.jitterSeconds` | check cadence (default hourly, ±2 min) |
 
 ## Notes & gotchas
 
-- **Booking time parsing:** handles `14/07/2026 at 10:00 AM`, `14.07.2026` and
-  `08th JUNE 2026 AT 10:00 AM`, read as DD/MM (India). If no time is given it assumes
+- **Booking time parsing:** handles `14/07/2026 at 10:00 AM`, `14.07.2026`,
+  `08th JUNE 2026 AT 10:00 AM` and `12TH NOVEMBER 2026 AT 10:00 HRS`, read as DD/MM (India). If no time is given it assumes
   10:00 AM, which every IISM opening so far has used, and says so in the reminder.
   `TZ=Asia/Kolkata` in compose makes these IST.
-- Reminders come from the **banner**, whatever course it's about. The banner doesn't name
-  courses, so a summer-course opening also gets reminders. Better a spare buzz than a missed
+- Reminders come from the **banner**, whatever course it's about. The banner doesn't always
+  name courses, so a summer-course opening also gets reminders. Better a spare buzz than a missed
   window.
 - The seats are first-come-first-served, and the form wants photo, DOB proof, qualification
   certificate and signature as jpg/png under 500 KB, plus OTP on your mobile. Have them
