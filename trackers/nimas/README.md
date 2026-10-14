@@ -90,9 +90,11 @@ docker compose up -d --build nimas-notifier                             # run 24
 docker compose logs -f nimas-notifier                                   # watch it
 ```
 
-Runs in `--watch` mode, checking every `watch.intervalMinutes` (default 60). `config.json`,
-`state.json`, and `.env` are wired in, so it remembers the seat count across restarts and
-restarts itself on reboot (`restart: unless-stopped`).
+Each check is a fresh `node tracker.mjs --once` that exits when it's done; compose runs it
+through [`../run-loop.sh`](../run-loop.sh), which sleeps until the time the check wrote to
+`data/next-run` (every `watch.intervalMinutes`, default 60). Between checks the container
+is just `sh` + `sleep`. `config.json`, `state.json`, and `.env` are wired in, so it remembers
+the seat count across restarts and restarts itself on reboot (`restart: unless-stopped`).
 
 Day-to-day:
 ```bash
@@ -124,7 +126,7 @@ Secrets live in **`.env`** (gitignored), everything else in `config.json`.
 | `notify.urgentThreshold` | seats below which every check pushes a high-priority nag |
 | `notify.urgentRemindMinutes` | rate limit for those urgent pushes (default 55) |
 | `notify.priority` | ntfy priority for normal pushes |
-| `watch.intervalMinutes` | check frequency in `--watch` mode (default 60) |
+| `watch.intervalMinutes` | minutes between checks (default 60) |
 | `watch.jitterSeconds` | randomizes timing a little so it doesn't look robotic |
 
 The tracker auto-loads `.env` from the project dir; Docker also injects it via `env_file:`.

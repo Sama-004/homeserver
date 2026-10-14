@@ -16,14 +16,21 @@ fully self-contained (its own script, config, Dockerfile, README); the root
 ```
 trackers/
 ├── docker-compose.yml   # one service per tracker — the orchestrator
+├── run-loop.sh          # every container's long-lived process: run a check, sleep, repeat
 ├── .env                 # shared secrets (gitignored): NTFY_TOPIC, LAT, LON
 ├── chicken-breast/      # each tracker: tracker.mjs + config.json + Dockerfile + README
-│   └── data/            # per-tracker state (gitignored, survives restarts)
+│   └── data/            # per-tracker state + next-run (gitignored, survive restarts)
 ├── nimas/
 │   └── data/
 └── iism/
     └── data/
 ```
+
+Node only runs during a check. Each container's process is `sh run-loop.sh`, which runs
+`node tracker.mjs --once`, reads the unix time the check wrote to `data/next-run`, and sleeps
+until then. An idle tracker is `sh` + `sleep`, well under 1 MiB, instead of a 20-40 MiB Node
+process. A check that runs past `CYCLE_TIMEOUT` seconds (default 300) is killed; a check that
+exits without writing `next-run` is retried after `FALLBACK_SLEEP` seconds (default 300).
 
 All trackers push to the same `NTFY_TOPIC`, so one phone subscription gets everything —
 titles/emoji tell them apart. Want separate topics? Give a service its own
@@ -41,7 +48,8 @@ docker compose restart chicken-tracker # apply config/.env changes to one tracke
 docker compose down                    # stop everything
 ```
 
-One-off checks / test pushes (see each tracker's README for its flags):
+One-off checks / test pushes (see each tracker's README for its flags). Name the command:
+without one, `run` starts the loop.
 
 ```bash
 docker compose run --rm nimas-notifier node tracker.mjs --test-notify
@@ -59,16 +67,26 @@ Push to `main` → GitHub Actions joins the tailnet and redeploys **all** tracke
 homeserver in place (`../.github/workflows/deploy.yml`). State in each `*/data/` and the root
 `.env` are untracked and survive deploys.
 
+`docker compose up` only recreates a container whose image or compose entry changed, and a
+running container keeps seeing the old copy of a mounted single file (`run-loop.sh`, each
+`config.json`). After a deploy that only touches those, run `docker compose restart`.
+
 ## Adding a new tracker
 
-1. Copy the shape of an existing one into a new directory: `tracker.mjs` (CLI:
-   `--once` / `--watch` / `--test-notify`), `config.json` for non-secrets, state via
-   `STATE_PATH`, secrets from the environment. `nimas/` is the minimal zero-dependency
-   template (plain `fetch`); `chicken-breast/` is the "site needs a real browser" variant
-   (Playwright).
+1. Copy the shape of an existing one into a new directory: `tracker.mjs`, `config.json`
+   for non-secrets, state via `STATE_PATH`, secrets from the environment. The contract with
+   `run-loop.sh`: `node tracker.mjs --once` (also the default with no flag) does one check,
+   writes the unix time in seconds of the next check to `next-run` next to the state file,
+   and exits. Write it in a `finally` so a failed check still schedules the next one
+   (`scheduleNext` in each tracker). `--test-notify` sends a test push and doesn't touch it.
+   `nimas/` is the minimal zero-dependency template (plain `fetch`); `chicken-breast/` is
+   the "site needs a real browser" variant (Playwright).
 2. Keep the conventions: fail **safe** on scrape/parse errors (log and leave state
-   unchanged, never a false alert), a daily heartbeat push so silence means something is
-   broken, and a wedge-watchdog that exits so Docker's restart policy self-heals.
-3. Add a service block for it in `docker-compose.yml` (build context = its directory,
-   mount its `config.json` read-only and its `data/` for state).
+   unchanged, never a false alert) and a daily heartbeat push so silence means something is
+   broken. A wedged check needs no watchdog of its own: `run-loop.sh` kills it after
+   `CYCLE_TIMEOUT`.
+3. Add a service block for it in `docker-compose.yml`: `<<: *tracker`, build context = its
+   directory, and `volumes:` with the `run-loop.sh` mount, its `config.json` read-only, and
+   its `data/` for state. If a check can take longer than 5 minutes, set `CYCLE_TIMEOUT`
+   in an `environment:` that starts with `<<: *tracker-env` (see `chicken-tracker`).
 4. Push to `main` — the deploy workflow picks it up (it runs `docker compose up` in this directory).

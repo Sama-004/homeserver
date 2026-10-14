@@ -44,7 +44,7 @@ response. Only if *every* page fails is the whole cycle given up (after one retr
 |---|---|---|
 | 🎿 **Ski news** | urgent | a new visible line mentions snow skiing / snowboarding / a ski course (water skiing is ignored) |
 | 📢 **Banner changed** | high (urgent if it mentions skiing) | the popup's red "Bookings will open …" line changes |
-| ⏰ **Booking reminders** | urgent | when the banner (or a new ski section) contains a date and time: pushes at T-60 min, T-10 min, and T-0 ("OPEN now"). The watch loop wakes up for these on the minute |
+| ⏰ **Booking reminders** | urgent | when the banner (or a new ski section) contains a date and time: pushes at T-60 min, T-10 min, and T-0 ("OPEN now"). The check before a reminder schedules the next one for that minute |
 | 👀 **Hint** | default | **hidden** ski content changed, e.g. someone edits the commented-out snow-skiing table to 2026-27 dates before publishing it |
 | 🆕 **Site updated** | low | any other newly visible line (ticker items, course rows) |
 | 🏔️ **Daily check-in** | min | once a day at `notify.dailyHour`: is a snow-skiing schedule up yet, the current banner, any pending reminders. This is the **heartbeat**: if it stops arriving, the tracker is dead |
@@ -79,6 +79,10 @@ docker compose run --rm iism-notifier node tracker.mjs --test-notify
 docker compose up -d --build iism-notifier
 docker compose logs -f iism-notifier
 ```
+
+Each check is a fresh `node tracker.mjs --once`; compose runs it through
+[`../run-loop.sh`](../run-loop.sh), which sleeps until the time the check wrote to
+`data/next-run`: an hour out, or the next unsent booking reminder if that is sooner.
 
 ## Config reference (`config.json`)
 

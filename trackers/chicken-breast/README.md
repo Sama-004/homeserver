@@ -76,9 +76,12 @@ docker compose up -d --build chicken-tracker                             # run 2
 docker compose logs -f chicken-tracker                                   # watch it
 ```
 
-Runs in `--watch` mode, checking every `watch.intervalMinutes` (default 12). `config.json`,
-`state.json`, and `.env` are wired in, so it remembers stock state across restarts and
-restarts itself on reboot (`restart: unless-stopped`).
+Each check is a fresh `node tracker.mjs --once` that exits when it's done; compose runs it
+through [`../run-loop.sh`](../run-loop.sh), which sleeps until the time the check wrote to
+`data/next-run` (every `watch.intervalMinutes`, default 12). Between checks the container
+is just `sh` + `sleep`. `config.json`, `state.json`, and `.env` are wired in, so it remembers
+stock state across restarts and restarts itself on reboot (`restart: unless-stopped`).
+A check that runs past `CYCLE_TIMEOUT` (150 s here) is killed, Chromium included.
 
 Day-to-day:
 ```bash
@@ -109,7 +112,7 @@ Secrets live in **`.env`** (gitignored), everything else in `config.json`.
 | `location.locality` | non-sensitive hint only (lat/lon come from `.env`) |
 | `notify.priority` | ntfy priority for the in-stock alert |
 | `notify.remindEveryMinutes` | keep nagging while still in stock, at most every N min (0 = only on transition; <10 ≈ every check) |
-| `watch.intervalMinutes` | check frequency in `--watch` mode |
+| `watch.intervalMinutes` | minutes between checks |
 | `browser.chromiumPath` | leave empty to use Playwright's Chromium; set to e.g. `/usr/bin/chromium` if bundled is missing |
 
 The tracker auto-loads `.env` from the project dir (override with `ENV_FILE`); Docker also
