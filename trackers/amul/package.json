@@ -1,0 +1,16 @@
+{
+  "name": "amul-notifier",
+  "version": "1.0.0",
+  "description": "Watches shop.amul.com for Amul whey protein and high-protein lassi/buttermilk coming back in stock at one pincode and pushes ntfy alerts.",
+  "type": "module",
+  "bin": {
+    "amul-notifier": "tracker.mjs"
+  },
+  "scripts": {
+    "check": "node tracker.mjs --once",
+    "dump": "node tracker.mjs --dump"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

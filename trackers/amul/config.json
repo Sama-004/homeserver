@@ -1,0 +1,39 @@
+{
+  "//site": "shop.amul.com is a Vue SPA over a JSON API. browsePath is the page loaded first for the session cookie + serverTimestamp; category is the products filter. storeId is a site constant (not a secret) used to sign each API request: it comes from /ms/store/amul/auto/EN/storeinfo.js (\"storeId\"). That file is 190 KB, so it is not fetched every run. If every API call starts failing with HTTP 401 or 503, look it up again there.",
+  "site": {
+    "baseUrl": "https://shop.amul.com",
+    "browsePath": "/en/browse/protein",
+    "category": "protein",
+    "storeId": "62fa94df8c13af2e242eba16",
+    "timeoutMs": 30000
+  },
+
+  "//location": "Stock is per pincode. The pincode maps to a substore (700032 -> west-bengal) whose stock the check reads. It is a city-level area, not a secret.",
+  "location": {
+    "pincode": "700032"
+  },
+
+  "//products": "A product is watched if its name contains any of these (case-insensitive). 'whey protein' covers all six whey SKUs (plain + chocolate, 30/60 sachets, both gift packs). A pattern that matches nothing is logged and shown in the daily check-in; it never alerts.",
+  "products": {
+    "match": ["whey protein", "high protein plain lassi", "high protein rose lassi", "high protein buttermilk"]
+  },
+
+  "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
+  "notify": {
+    "type": "ntfy",
+    "server": "https://ntfy.sh",
+    "topic": "",
+    "//remindEveryMinutes": "While a watched item stays in stock, push a high-priority reminder at most this often.",
+    "remindEveryMinutes": 30,
+    "//dailyHour": "Send one quiet (min priority) check-in push per day at/after this hour (local time; set TZ in docker-compose). It is the proof-of-life heartbeat. -1 disables.",
+    "dailyHour": 9,
+    "//failureAlertHours": "If every check fails for this long, push one warning (reset on the next good check).",
+    "failureAlertHours": 6
+  },
+
+  "//watch": "After each check the tracker writes next-run (unix seconds) = now + intervalMinutes +/- jitterSeconds, and run-loop.sh sleeps until then. Whey sells out within the hour; one check is ~20 KB, so 5 minutes is still polite.",
+  "watch": {
+    "intervalMinutes": 5,
+    "jitterSeconds": 60
+  }
+}
