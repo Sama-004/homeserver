@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Blinkit stock tracker -> ntfy push when a product is back in stock.
 // Usage:
-//   node tracker.mjs --once     run a single check (use this from cron/systemd)
-//   node tracker.mjs --watch    run forever, checking every config.watch.intervalMinutes
+//   node tracker.mjs [--once]        run one check, write next-run, exit (the default)
 //   node tracker.mjs --test-notify   send a test ntfy push and exit
+// In Docker, ../run-loop.sh runs the check and sleeps until the time in next-run.
 //
 // How location works: Blinkit picks the serving "dark store" from lat/lon, which the
 // web app stores in the cookies gr_1_lat / gr_1_lon. We set those cookies, load the
@@ -19,6 +19,7 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = process.env.CONFIG_PATH || join(HERE, 'config.json');
 const STATE_PATH = process.env.STATE_PATH || join(HERE, 'state.json');
+const NEXT_RUN_PATH = join(dirname(STATE_PATH), 'next-run');
 
 // Secrets (NTFY_TOPIC, LAT, LON) live in .env, not config.json. Auto-load it if present.
 // systemd/Docker may instead inject these via EnvironmentFile/env_file — that's fine,
@@ -266,36 +267,19 @@ async function main() {
     return;
   }
 
-  if (args.includes('--watch')) {
-    const everyMs = (cfg.watch.intervalMinutes || 12) * 60_000;
-    const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
-    // Watchdog: a single cycle should never take long. If one wedges (e.g. a hung
-    // headless browser that never returns and isn't covered by a Playwright timeout),
-    // exit so the container's restart policy hands us a clean process. This turns a
-    // silent multi-hour freeze into a ~minutes-long self-heal.
-    const cycleHardLimitMs = Math.max(120_000, (cfg.browser.navTimeoutMs || 45000) * 3);
-    log(`watch mode: every ~${cfg.watch.intervalMinutes}min (+/- ${cfg.watch.jitterSeconds}s); cycle hard-limit ${Math.round(cycleHardLimitMs / 1000)}s`);
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const watchdog = setTimeout(() => {
-        log(`FATAL: check cycle exceeded ${Math.round(cycleHardLimitMs / 1000)}s — wedged; exiting for a clean restart`);
-        process.exit(1);
-      }, cycleHardLimitMs);
-      try {
-        await runOnce(cfg);
-        await maybeHeartbeat(cfg);
-      } finally {
-        clearTimeout(watchdog);
-      }
-      const wait = everyMs + Math.floor((Math.random() * 2 - 1) * jitterMs);
-      log(`next check in ${Math.round(wait / 1000)}s`);
-      await sleep(Math.max(30_000, wait));
-    }
+  try {
+    await runOnce(cfg);
+    await maybeHeartbeat(cfg);
+  } finally {
+    scheduleNext(cfg);
   }
+}
 
-  // default: single check (for cron / systemd timer)
-  await runOnce(cfg);
-  await maybeHeartbeat(cfg);
+// next-run holds one unix time in seconds: when run-loop.sh starts the next check.
+function scheduleNext(cfg) {
+  const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
+  const at = Date.now() + (cfg.watch.intervalMinutes || 12) * 60_000 + Math.floor((Math.random() * 2 - 1) * jitterMs);
+  writeFileSync(NEXT_RUN_PATH, String(Math.ceil(at / 1000)));
 }
 
 main().catch((e) => {

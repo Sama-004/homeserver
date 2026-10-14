@@ -26,7 +26,7 @@
     "heartbeatHour": 9
   },
 
-  "//watch": "Used only in --watch mode. intervalMinutes between checks; jitterSeconds randomizes timing a little so it does not look robotic.",
+  "//watch": "When the next check runs: each --once run writes now + intervalMinutes (+/- jitterSeconds) to data/next-run for run-loop.sh. intervalMinutes between checks; jitterSeconds randomizes timing a little so it does not look robotic.",
   "watch": {
     "intervalMinutes": 12,
     "jitterSeconds": 90

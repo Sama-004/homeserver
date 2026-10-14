@@ -9,5 +9,7 @@ RUN npm install --omit=dev
 COPY tracker.mjs ./
 # config.json and state.json come in via a mounted volume (see docker-compose.yml)
 
-# Default to watch mode; state + config are on a volume so restarts remember stock state.
-CMD ["node", "tracker.mjs", "--watch"]
+# One check, then exit. docker-compose.yml runs this through ../run-loop.sh, which
+# repeats it on the schedule the tracker writes to data/next-run; state + config are on
+# a volume so each run remembers stock state.
+CMD ["node", "tracker.mjs", "--once"]
