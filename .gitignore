@@ -1,5 +1,6 @@
 node_modules/
 state.json
+next-run
 data/
 .env
 *.log
