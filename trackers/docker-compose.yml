@@ -48,3 +48,12 @@ services:
       - ./run-loop.sh:/run-loop.sh:ro
       - ./iism/config.json:/app/config.json:ro
       - ./iism/data:/app/data
+
+  amul-notifier:
+    <<: *tracker
+    build: ./amul
+    container_name: amul-notifier
+    volumes:
+      - ./run-loop.sh:/run-loop.sh:ro
+      - ./amul/config.json:/app/config.json:ro
+      - ./amul/data:/app/data

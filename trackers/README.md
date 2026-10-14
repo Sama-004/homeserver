@@ -10,6 +10,7 @@ fully self-contained (its own script, config, Dockerfile, README); the root
 | [`chicken-breast/`](chicken-breast/) 🐔 | Blinkit stock for frozen chicken breast at my dark store | [README](chicken-breast/README.md) |
 | [`nimas/`](nimas/) 🏔️ | Seat availability for the NIMAS Basic Mountaineering Course (BMC-64) | [README](nimas/README.md) |
 | [`iism/`](iism/) 🎿 | IISM Gulmarg site for the snow-skiing course schedule + booking date (with exact-time booking reminders) | [README](iism/README.md) |
+| [`amul/`](amul/) 🥛 | Amul whey protein + protein lassi/buttermilk stock at pincode 700032 | [README](amul/README.md) |
 
 ## Layout
 
@@ -22,7 +23,9 @@ trackers/
 │   └── data/            # per-tracker state + next-run (gitignored, survive restarts)
 ├── nimas/
 │   └── data/
-└── iism/
+├── iism/
+│   └── data/
+└── amul/
     └── data/
 ```
 
