@@ -1,0 +1,25 @@
+{
+  "//catalogue": "path is the API's category id: 9672 is MEN (MEN + UNISEX products, what the site's men section shows), from result.aggregations.tree.genders. The API ignores genderId=men. label goes into push titles. Run --dump to see the catalogue.",
+  "catalogue": {
+    "path": "9672,,",
+    "label": "men's"
+  },
+
+  "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
+  "notify": {
+    "type": "ntfy",
+    "server": "https://ntfy.sh",
+    "topic": "",
+    "//dailyHour": "Send one quiet (min priority) check-in push per day at/after this hour (local time; set TZ in docker-compose). It is the proof-of-life heartbeat. -1 disables.",
+    "dailyHour": 9,
+    "//failureAlertHours": "If every check fails for this long, push one warning (reset on the next good check).",
+    "failureAlertHours": 6
+  },
+
+  "//watch": "After each check the tracker writes next-run (unix seconds) = now + intervalMinutes +/- jitterSeconds, or the next wakeAt local time (HH:MM) if that is sooner. Uniqlo India starts sale prices at 02:00 IST (Tuesdays so far), so 02:01 catches them within a minute. One check is 7 API pages of 100 products.",
+  "watch": {
+    "intervalMinutes": 15,
+    "jitterSeconds": 60,
+    "wakeAt": ["02:01"]
+  }
+}

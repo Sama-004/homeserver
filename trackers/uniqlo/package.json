@@ -1,0 +1,17 @@
+{
+  "name": "uniqlo-notifier",
+  "version": "1.0.0",
+  "description": "Watches the men's section of uniqlo.com/in, keeps every price in SQLite, and pushes ntfy alerts on price drops and new products.",
+  "type": "module",
+  "bin": {
+    "uniqlo-notifier": "tracker.mjs"
+  },
+  "scripts": {
+    "check": "node tracker.mjs --once",
+    "dump": "node tracker.mjs --dump",
+    "stats": "node tracker.mjs --stats"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}
