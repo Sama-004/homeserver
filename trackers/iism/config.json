@@ -32,7 +32,7 @@
     "failureAlertHours": 6
   },
 
-  "//watch": "Used only in --watch mode. intervalMinutes between checks; booking reminders wake the loop early on their own. jitterSeconds randomizes timing a little so it does not look robotic.",
+  "//watch": "When the next check runs: each --once run writes now + intervalMinutes (+/- jitterSeconds) to data/next-run for run-loop.sh, or the time of the next unsent booking reminder if that is sooner. intervalMinutes between checks. jitterSeconds randomizes timing a little so it does not look robotic.",
   "watch": {
     "intervalMinutes": 60,
     "jitterSeconds": 120

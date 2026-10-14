@@ -2,10 +2,10 @@
 // IISM Gulmarg course watcher -> ntfy push when a snow-skiing course (or a booking date)
 // shows up on iismgulmarg.in.
 // Usage:
-//   node tracker.mjs --once          run a single check (use this from cron/systemd)
-//   node tracker.mjs --watch         run forever, checking every config.watch.intervalMinutes
+//   node tracker.mjs [--once]        run one check, write next-run, exit (the default)
 //   node tracker.mjs --test-notify   send a test ntfy push and exit
 //   node tracker.mjs --dump          print what the parser sees on each page and exit
+// In Docker, ../run-loop.sh runs the check and sleeps until the time in next-run.
 //
 // How the data works: iismgulmarg.in is plain server-rendered HTML (no API, no JS
 // rendering), so we fetch the pages and turn each into a list of *visible* text lines:
@@ -34,6 +34,7 @@ try {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = process.env.CONFIG_PATH || join(HERE, 'config.json');
 const STATE_PATH = process.env.STATE_PATH || join(HERE, 'state.json');
+const NEXT_RUN_PATH = join(dirname(STATE_PATH), 'next-run');
 
 // The one secret (NTFY_TOPIC) lives in .env, not config.json. Auto-load it if present.
 // systemd/Docker may instead inject it via EnvironmentFile/env_file — that's fine,
@@ -535,37 +536,21 @@ async function main() {
     return;
   }
 
-  if (args.includes('--watch')) {
-    const everyMs = (cfg.watch.intervalMinutes || 60) * 60_000;
-    const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
-    // Watchdog: a single cycle should never take long. If one wedges (e.g. a socket that
-    // never returns and somehow slips past the AbortController), exit so the container's
-    // restart policy hands us a clean process. This turns a silent multi-hour freeze into
-    // a ~minutes-long self-heal.
-    const cycleHardLimitMs = Math.max(180_000, (cfg.site.timeoutMs || 30000) * cfg.site.pages.length * 3);
-    log(`watch mode: every ~${cfg.watch.intervalMinutes}min (+/- ${cfg.watch.jitterSeconds}s); cycle hard-limit ${Math.round(cycleHardLimitMs / 1000)}s`);
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const watchdog = setTimeout(() => {
-        log(`FATAL: check cycle exceeded ${Math.round(cycleHardLimitMs / 1000)}s — wedged; exiting for a clean restart`);
-        process.exit(1);
-      }, cycleHardLimitMs);
-      try {
-        await runOnce(cfg);
-      } finally {
-        clearTimeout(watchdog);
-      }
-      // Wake early for a booking reminder — those need to land on the minute, not "within the hour".
-      const regular = everyMs + Math.floor((Math.random() * 2 - 1) * jitterMs);
-      const untilReminder = nextReminderAt(loadState()) - Date.now();
-      const wait = Math.max(30_000, Math.min(regular, untilReminder));
-      log(`next check in ${Math.round(wait / 1000)}s${untilReminder < regular ? ' (booking reminder)' : ''}`);
-      await sleep(wait);
-    }
+  try {
+    await runOnce(cfg);
+  } finally {
+    scheduleNext(cfg);
   }
+}
 
-  // default: single check (for cron / systemd timer)
-  await runOnce(cfg);
+// next-run holds one unix time in seconds: when run-loop.sh starts the next check.
+// A pending booking reminder pulls it forward: those must land on the minute.
+function scheduleNext(cfg) {
+  const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
+  const regular = Date.now() + (cfg.watch.intervalMinutes || 60) * 60_000 + Math.floor((Math.random() * 2 - 1) * jitterMs);
+  const reminder = nextReminderAt(loadState());
+  if (reminder < regular) log(`next check at ${fmtWhen(reminder)} for a booking reminder`);
+  writeFileSync(NEXT_RUN_PATH, String(Math.ceil(Math.min(regular, reminder) / 1000)));
 }
 
 main().catch((e) => {

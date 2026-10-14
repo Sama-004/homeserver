@@ -8,7 +8,6 @@
   },
   "scripts": {
     "check": "node tracker.mjs --once",
-    "watch": "node tracker.mjs --watch",
     "dump": "node tracker.mjs --dump"
   },
   "engines": {
