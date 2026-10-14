@@ -67,9 +67,10 @@ Push to `main` → GitHub Actions joins the tailnet and redeploys **all** tracke
 homeserver in place (`../.github/workflows/deploy.yml`). State in each `*/data/` and the root
 `.env` are untracked and survive deploys.
 
-`docker compose up` only recreates a container whose image or compose entry changed, and a
-running container keeps seeing the old copy of a mounted single file (`run-loop.sh`, each
-`config.json`). After a deploy that only touches those, run `docker compose restart`.
+Deploys recreate every tracker container (`--force-recreate`). A running container keeps
+seeing the old copy of a mounted single file (`run-loop.sh`, each `config.json`) after
+`git reset` replaces it, so recreating is what makes those changes apply. Each tracker runs
+one check right after a deploy, then goes back to its schedule.
 
 ## Adding a new tracker
 

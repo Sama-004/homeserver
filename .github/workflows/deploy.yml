@@ -54,7 +54,7 @@ jobs:
 
             cd trackers
             mkdir -p chicken-breast/data nimas/data iism/data
-            docker compose up -d --build            # cached build: reuses the 2GB base
+            docker compose up -d --build --force-recreate   # cached build; recreate so mounted run-loop.sh / config.json changes apply
             docker image prune -f
             docker compose ps
           EOF
