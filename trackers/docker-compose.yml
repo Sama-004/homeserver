@@ -57,3 +57,12 @@ services:
       - ./run-loop.sh:/run-loop.sh:ro
       - ./amul/config.json:/app/config.json:ro
       - ./amul/data:/app/data
+
+  amazon-notifier:
+    <<: *tracker
+    build: ./amazon
+    container_name: amazon-notifier
+    volumes:
+      - ./run-loop.sh:/run-loop.sh:ro
+      - ./amazon/config.json:/app/config.json:ro
+      - ./amazon/data:/app/data
