@@ -12,6 +12,7 @@ fully self-contained (its own script, config, Dockerfile, README); the root
 | [`iism/`](iism/) 🎿 | IISM Gulmarg site for the snow-skiing course schedule + booking date (with exact-time booking reminders) | [README](iism/README.md) |
 | [`amul/`](amul/) 🥛 | Amul whey protein + protein lassi/buttermilk stock at pincode 700032 | [README](amul/README.md) |
 | [`amazon/`](amazon/) 📚 | Amazon.in stock for the Kobo Clara BW eReader (a product list, via Kobo's brand store page) | [README](amazon/README.md) |
+| [`uniqlo/`](uniqlo/) 👕 | Uniqlo India men's section: price drops (urgent), new products, every price kept in SQLite | [README](uniqlo/README.md) |
 
 ## Layout
 
@@ -28,8 +29,10 @@ trackers/
 │   └── data/
 ├── amul/
 │   └── data/
-└── amazon/
-    └── data/
+├── amazon/
+│   └── data/
+└── uniqlo/
+    └── data/            # also uniqlo.db, the SQLite price history
 ```
 
 Node only runs during a check. Each container's process is `sh run-loop.sh`, which runs

@@ -53,7 +53,7 @@ jobs:
             done
 
             cd trackers
-            mkdir -p chicken-breast/data nimas/data iism/data amul/data amazon/data
+            mkdir -p chicken-breast/data nimas/data iism/data amul/data amazon/data uniqlo/data
             docker compose up -d --build --force-recreate   # cached build; recreate so mounted run-loop.sh / config.json changes apply
             docker image prune -f
             docker compose ps

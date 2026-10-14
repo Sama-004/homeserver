@@ -66,3 +66,12 @@ services:
       - ./run-loop.sh:/run-loop.sh:ro
       - ./amazon/config.json:/app/config.json:ro
       - ./amazon/data:/app/data
+
+  uniqlo-notifier:
+    <<: *tracker
+    build: ./uniqlo
+    container_name: uniqlo-notifier
+    volumes:
+      - ./run-loop.sh:/run-loop.sh:ro
+      - ./uniqlo/config.json:/app/config.json:ro
+      - ./uniqlo/data:/app/data
