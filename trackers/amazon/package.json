@@ -1,0 +1,16 @@
+{
+  "name": "amazon-notifier",
+  "version": "1.0.0",
+  "description": "Watches Amazon.in brand store pages for products (the Kobo Clara BW eReader) coming back in stock and pushes ntfy alerts.",
+  "type": "module",
+  "bin": {
+    "amazon-notifier": "tracker.mjs"
+  },
+  "scripts": {
+    "check": "node tracker.mjs --once",
+    "dump": "node tracker.mjs --dump"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

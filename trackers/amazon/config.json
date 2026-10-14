@@ -1,0 +1,29 @@
+{
+  "//products": "Each watched Amazon.in product: asin, a short name for pushes, and storePage, the brand's Amazon store page whose HTML embeds the product's record (\"asin\":\"<asin>\",\"buyingOptions\"). Not the /dp/ product page: while the Clara BW has no offer, Amazon serves its SleepCover there. Products on the same storePage share one fetch. Run --dump to see every record on a store page.",
+  "products": [
+    {
+      "asin": "B0CZXYV8GT",
+      "name": "Kobo Clara BW",
+      "storePage": "https://www.amazon.in/stores/KOBO/page/CD52448F-618F-42A4-BAE2-4B306A8B3025"
+    }
+  ],
+
+  "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
+  "notify": {
+    "type": "ntfy",
+    "server": "https://ntfy.sh",
+    "topic": "",
+    "//remindEveryMinutes": "While a watched product stays in stock, push a high-priority reminder at most this often.",
+    "remindEveryMinutes": 15,
+    "//dailyHour": "Send one quiet (min priority) check-in push per day at/after this hour (local time; set TZ in docker-compose). It is the proof-of-life heartbeat. -1 disables.",
+    "dailyHour": 9,
+    "//failureAlertHours": "If every check fails for this long, push one warning (reset on the next good check).",
+    "failureAlertHours": 6
+  },
+
+  "//watch": "After each check the tracker writes next-run (unix seconds) = now + intervalMinutes +/- jitterSeconds, and run-loop.sh sleeps until then. The Clara BW sells in small batches; one check is one ~120 KB page (gzipped on the wire), so 5 minutes is still polite.",
+  "watch": {
+    "intervalMinutes": 5,
+    "jitterSeconds": 90
+  }
+}
