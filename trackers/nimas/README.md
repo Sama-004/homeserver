@@ -16,7 +16,7 @@ The courses page is a **React SPA** — the course table isn't in the HTML at al
 fetches it from the site's own backend:
 
 ```
-POST https://apierp.azurewebsites.net/api/api/getTemplateDataList
+POST https://api.dialerp.com/api/api/getTemplateDataList   (was apierp.azurewebsites.net until Oct 2026)
      Authorization-Token: <the site's public token, shipped in its JS bundle>
      templateID: 3, filters: {"Category Name": "Mountaineering"}
 ```

@@ -7,7 +7,7 @@
 //
 // How the data works: nimasdirang.com is a React front-end with no server-rendered
 // seat numbers — the course table is filled in by one POST to the ERP backend
-// (apierp.azurewebsites.net .../getTemplateDataList) with templateID 3 and a
+// (api.dialerp.com .../getTemplateDataList) with templateID 3 and a
 // "Category Name" filter. No Cloudflare, no cookies, no browser: plain fetch works.
 // The response is column-oriented: response.records is an array of rows, and each row
 // is an ARRAY of {name, value} pairs which we fold into a normal object. We pick the
