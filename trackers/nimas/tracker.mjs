@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // NIMAS course seat tracker -> ntfy push when seats for a course change / run low.
 // Usage:
-//   node tracker.mjs --once     run a single check (use this from cron/systemd)
-//   node tracker.mjs --watch    run forever, checking every config.watch.intervalMinutes
+//   node tracker.mjs [--once]        run one check, write next-run, exit (the default)
 //   node tracker.mjs --test-notify   send a test ntfy push and exit
+// In Docker, ../run-loop.sh runs the check and sleeps until the time in next-run.
 //
 // How the data works: nimasdirang.com is a React front-end with no server-rendered
 // seat numbers — the course table is filled in by one POST to the ERP backend
@@ -28,6 +28,7 @@ try {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = process.env.CONFIG_PATH || join(HERE, 'config.json');
 const STATE_PATH = process.env.STATE_PATH || join(HERE, 'state.json');
+const NEXT_RUN_PATH = join(dirname(STATE_PATH), 'next-run');
 
 // The one secret (NTFY_TOPIC) lives in .env, not config.json. Auto-load it if present.
 // systemd/Docker may instead inject it via EnvironmentFile/env_file — that's fine,
@@ -292,34 +293,18 @@ async function main() {
     return;
   }
 
-  if (args.includes('--watch')) {
-    const everyMs = (cfg.watch.intervalMinutes || 60) * 60_000;
-    const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
-    // Watchdog: a single cycle should never take long. If one wedges (e.g. a socket that
-    // never returns and somehow slips past the AbortController), exit so the container's
-    // restart policy hands us a clean process. This turns a silent multi-hour freeze into
-    // a ~minutes-long self-heal.
-    const cycleHardLimitMs = Math.max(120_000, (cfg.api.timeoutMs || 30000) * 3);
-    log(`watch mode: every ~${cfg.watch.intervalMinutes}min (+/- ${cfg.watch.jitterSeconds}s); cycle hard-limit ${Math.round(cycleHardLimitMs / 1000)}s`);
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const watchdog = setTimeout(() => {
-        log(`FATAL: check cycle exceeded ${Math.round(cycleHardLimitMs / 1000)}s — wedged; exiting for a clean restart`);
-        process.exit(1);
-      }, cycleHardLimitMs);
-      try {
-        await runOnce(cfg);
-      } finally {
-        clearTimeout(watchdog);
-      }
-      const wait = everyMs + Math.floor((Math.random() * 2 - 1) * jitterMs);
-      log(`next check in ${Math.round(wait / 1000)}s`);
-      await sleep(Math.max(30_000, wait));
-    }
+  try {
+    await runOnce(cfg);
+  } finally {
+    scheduleNext(cfg);
   }
+}
 
-  // default: single check (for cron / systemd timer)
-  await runOnce(cfg);
+// next-run holds one unix time in seconds: when run-loop.sh starts the next check.
+function scheduleNext(cfg) {
+  const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
+  const at = Date.now() + (cfg.watch.intervalMinutes || 60) * 60_000 + Math.floor((Math.random() * 2 - 1) * jitterMs);
+  writeFileSync(NEXT_RUN_PATH, String(Math.ceil(at / 1000)));
 }
 
 main().catch((e) => {

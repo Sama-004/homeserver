@@ -7,8 +7,7 @@
     "nimas-notifier": "tracker.mjs"
   },
   "scripts": {
-    "check": "node tracker.mjs --once",
-    "watch": "node tracker.mjs --watch"
+    "check": "node tracker.mjs --once"
   },
   "engines": {
     "node": ">=20"

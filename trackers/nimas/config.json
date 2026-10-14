@@ -30,7 +30,7 @@
     "urgentRemindMinutes": 55
   },
 
-  "//watch": "Used only in --watch mode. intervalMinutes between checks (60 = hourly, which is what urgent mode's 55-minute nag assumes); jitterSeconds randomizes timing a little so it does not look robotic.",
+  "//watch": "When the next check runs: each --once run writes now + intervalMinutes (+/- jitterSeconds) to data/next-run for run-loop.sh. intervalMinutes between checks (60 = hourly, which is what urgent mode's 55-minute nag assumes); jitterSeconds randomizes timing a little so it does not look robotic.",
   "watch": {
     "intervalMinutes": 60,
     "jitterSeconds": 120
