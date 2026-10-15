@@ -1,9 +1,11 @@
 # 👕 Uniqlo Price Notifier
 
 Watches the **men's section of [uniqlo.com/in](https://www.uniqlo.com/in/en/)** and sends an
-**ntfy push** when a product's price drops, when a new product appears, and (quietly) when a
-price goes up. Sale sizes sell out fast, so price drops are urgent. Every listing's price
-and its full history live in a SQLite database.
+**ntfy push** only for things you can buy in **your sizes** (`sizes`, default S, M, L): a
+colour on sale or just cheaper that is in stock in one of them, or a new product in stock in
+one of them. Sale sizes sell out fast, so deals are urgent. A sale or price drop with none of
+your sizes in stock, a price rise, a product leaving or coming back: logged, never pushed.
+Every listing's price and its full history live in a SQLite database.
 
 Part of the [trackers monorepo](../README.md): the `docker compose` commands below run from
 `trackers/`, and the shared `.env` lives there too.
@@ -31,6 +33,26 @@ full price for some colours and `01` on sale for others, each with its own price
 (`https://www.uniqlo.com/in/en/products/<productId>/<priceGroup>`). So the key everywhere is
 `(productId, priceGroup)`.
 
+**Stock comes from a second call per listing**, the one the product page makes:
+
+```
+GET https://www.uniqlo.com/in/api/commerce/v5/en/products/<productId>/price-groups/<group>/l2s?withPrices=true&withStocks=true&includePreviousPrice=false&httpFailure=true
+```
+
+`result.l2s[]` is one SKU per colour × size (`l2Id`, `color.code`, `size.code`),
+`result.stocks[l2Id].statusCode` is `IN_STOCK`, `LOW_STOCK` or `STOCK_OUT` (with a
+`quantity`), and `result.prices[l2Id]` is that SKU's base and promo price. A size counts when
+it is `IN_STOCK` or `LOW_STOCK` with a quantity above 0. Size and colour codes mean the same
+thing on every product (`SMA004` is M, `COL38` is dark brown); their names come from the
+catalogue's `aggregations` and items. An item's own `sizes` / `colors` list only what is in
+stock and sometimes lags the stock call (on 15 Oct, 3 of 128 sale listings disagreed, one with
+an in-stock M missing from the list), so the tracker never reads stock from them.
+
+Every check makes this call for each sale listing (about 130), each listing that dropped in
+price, and each new product: 4 at a time, about 35 s in all (each call takes about 1 s at
+Uniqlo's end). A listing whose call fails is skipped this check and tried again on the next.
+If more than half fail, the check fails like a bad catalogue: no push, database unchanged.
+
 **Fail-safe:** a partial catalogue would read as "products removed", so the whole check
 fails when:
 
@@ -55,6 +77,9 @@ check is one transaction.
 |---|---|
 | `products` | one per listing: `product_id`, `price_group`, `name`, `gender`, `base`, `promo`, `price` (`promo ?? base`, what you pay), `sale_start` / `sale_end` (unix s), `first_seen`, `last_seen`, `removed_at` (set when it leaves a complete catalogue, cleared when it comes back) |
 | `price_history` | `product_id`, `price_group`, `at`, `base`, `promo`, `price`: one row when a listing is first seen and one on every change |
+| `deal_alerts` | `product_id`, `price_group`, `color_code`, `price`, `alerted_at`: one per deal already pushed (or summed up on the baseline check). A colour that sells out and comes back at the same price is not pushed again |
+
+`PRAGMA user_version` is 1 once `deal_alerts` has been filled by a baseline check (see below).
 
 `data/state.json` holds only the alert bookkeeping (`lastDailyDate`, `failure`), the same
 as the other trackers. The 80% baseline comes from the database itself.
@@ -69,27 +94,38 @@ docker compose run --rm uniqlo-notifier node -e '
 
 ## What it pushes
 
-One check sends at most **one** combined push. Entries are sorted, strongest kind first;
-the title and priority come from the strongest kind present. The body lists as many entries
-as fit in ntfy's 4 KB, then `…and N more`. Tapping opens the first entry's product page, and
-its product photo is attached.
+One check sends at most **one** combined push, one entry per colour. Entries are sorted,
+strongest kind first, then biggest discount first; the title and priority come from the
+strongest kind present. The body lists as many entries as fit in ntfy's 4 KB, then
+`…and N more`. Tapping opens the first entry's product page on its colour
+(`?colorDisplayCode=38`, which the site honours), and that colour's photo is attached.
+
+A **deal** is a listing that is on sale (`promo` set) or whose price dropped this check (also a
+new or returning listing cheaper than a live listing of the same product: that is how a sale
+starts, a new `01` group for some colours). For each deal, every colour in stock in one of
+your sizes is keyed by `(productId, priceGroup, colour, price)`, and a key is pushed once.
 
 | signal | priority | when |
 |---|---|---|
-| 📉 **Price drop** | urgent | a listing's price went down. `Name (colour) ₹2,990 → ₹1,990 (-33%)` and the link, biggest % first. Title: the product and its % for one drop, `Uniqlo: N men's price drops` for several. Also a new or returning listing cheaper than a live listing of the same product: that is how a sale starts (a new `01` group for some colours) |
-| 🆕 **New product** | high | a listing never seen before. `🆕 Name (colour) ₹price` and the link |
-| ↩️ **Back** | default | a listing that was removed is in the catalogue again |
-| 📈 **Price rise** | default | listed last, never raises the priority (a sale ending shows up here) |
-| 👕 **Daily check-in** | min | once a day at `notify.dailyHour` (9, local time): listings tracked, how many on sale, and the last 24 h's drops, rises and new listings. This is the **heartbeat**: if it stops arriving, the tracker is dead |
+| 📉 **Deal** | urgent | a deal key never pushed before. `Washable Milano Ribbed Knitted T-Shirt (dark brown) ₹2,490 → ₹1,490 (-40%) · S M L`: the colour's base price (or the old price, for a drop off-sale), its price, and your sizes in stock. A sale that started over 2 days ago adds `· on sale since Tue 6 Oct`, so a restock of an old sale doesn't read as a fresh markdown. This covers a fresh markdown and a sale colour coming back in your size. A further price cut is a new key and pushes again |
+| 🆕 **New product** | high | a product ID never seen in any price group, in stock in one of your sizes. `🆕 Name (colour) ₹price · M L`. A new product with none of your sizes in stock is stored and never pushed |
+| 🏷️ **Sale summary** | default | once, on the baseline check (below) |
+| 👕 **Daily check-in** | min | once a day at `notify.dailyHour` (9, local time): listings tracked, how many on sale and how many of those are in stock in your sizes, and the last 24 h's deals pushed, drops, rises and new listings. This is the **heartbeat**: if it stops arriving, the tracker is dead |
 | ⚠️ **Failing** | default | checks have failed for `notify.failureAlertHours` (6). One push, reset on the next good check |
 
-A listing missing from a complete catalogue gets `removed_at` and a log line, no push.
+Logged only: price rises, drops and sales with none of your sizes in stock, a listing leaving
+a complete catalogue (it gets `removed_at`), a listing coming back (`back`), and a known
+product moving to another price group at the same or a higher price (`regroup`, as when the
+Oxford Shirt moved from `/00` to `/01` at ₹2,490).
 
-The **first ever check** fills the database and sends nothing (650 "new products" would be
-spam). It logs the counts.
+**Baseline check.** The first check with an empty `deal_alerts` (the first ever, or the first
+after deal tracking was added) would otherwise push every current sale colour as urgent. It
+records all of them silently and sends one default push instead: `Uniqlo: N men's sale items
+in S/M/L right now`, biggest discount first. New products found on that check are stored
+without a push. After that, `user_version` is 1 and it never happens again.
 
-If the push itself fails (ntfy down), the database is not advanced, so the same changes
-alert again on the next check.
+If the push itself fails (ntfy down), neither the database nor `deal_alerts` is advanced, so
+the same entries push again on the next check.
 
 ## Schedule: 02:01 every night
 
@@ -118,13 +154,19 @@ Uses the shared `NTFY_TOPIC` from `trackers/.env`. Needs **Node >= 22.13** (for
 ```bash
 cd uniqlo
 node tracker.mjs --dump                            # the live catalogue, no push, no database
+node tracker.mjs --deals                           # sale colours in your sizes right now
 ENV_FILE=../.env node tracker.mjs --test-notify    # should buzz your phone
 ENV_FILE=../.env node tracker.mjs --once           # one real check
 node tracker.mjs --stats                           # changes per weekday / hour
 ```
 
 `--dump` prints the listing count, how many are on sale, and one row per listing (key,
-gender, price, base price when on sale, name and colour), sale items first.
+gender, price, base price when on sale, name and colour), sale items first. Under each sale
+listing, one line per colour in stock in your sizes (`dark brown ₹1,490: M`), or
+`no S/M/L in stock`.
+
+`--deals` prints every sale colour in stock in your sizes right now, as it would read in a
+push, biggest discount first. Like `--dump`, it touches neither the database nor ntfy.
 
 `--once` (also the default) runs one check, updates `uniqlo.db` and `state.json`, and writes
 `next-run` next to them: one line, the unix time in seconds of the next check. It writes
@@ -148,6 +190,7 @@ docker compose logs -f uniqlo-notifier
 |-----|---------|
 | `catalogue.path` | the API category id (`9672,,` is MEN) |
 | `catalogue.label` | the word in push titles (`men's`) |
+| `sizes` | size names that make a push (default `["S", "M", "L"]`), matched by the name the site shows. Products without them, like waist-sized trousers, never push |
 | `notify.dailyHour` | hour (local) for the daily check-in / heartbeat. `-1` disables |
 | `notify.failureAlertHours` | warn once after this many hours of failed checks (default 6) |
 | `watch.intervalMinutes` / `watch.jitterSeconds` | regular cadence (default every 15 min, ±60 s) |
@@ -163,6 +206,6 @@ variables win over the file.
   it can't pass `--disable-warning`). Every other warning still prints.
 - Push links go to product pages, which load fine. The men's sale listing page
   (`/in/en/feature/sale/men`) couldn't be checked: Akamai answers a plain fetch with 403.
-- A product that is only on sale in some colours shows the representative colour's name and
-  photo. The link opens the product page with every colour.
+- A price group's colours can have different base prices (2 of 128 sale listings on 15 Oct),
+  so each push line uses its colour's own prices from the stock call.
 - `TZ=Asia/Kolkata` in compose makes `notify.dailyHour`, `watch.wakeAt` and `--stats` IST.

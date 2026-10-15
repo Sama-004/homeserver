@@ -5,6 +5,9 @@
     "label": "men's"
   },
 
+  "//sizes": "Only stock in these sizes makes a push: a sale or price drop with none of them in stock is just logged. Matched by the size's name as the site shows it. Products without these sizes (waist-sized trousers) never push.",
+  "sizes": ["S", "M", "L"],
+
   "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
   "notify": {
     "type": "ntfy",
@@ -16,7 +19,7 @@
     "failureAlertHours": 6
   },
 
-  "//watch": "After each check the tracker writes next-run (unix seconds) = now + intervalMinutes +/- jitterSeconds, or the next wakeAt local time (HH:MM) if that is sooner. Uniqlo India starts sale prices at 02:00 IST (Tuesdays so far), so 02:01 catches them within a minute. One check is 7 API pages of 100 products.",
+  "//watch": "After each check the tracker writes next-run (unix seconds) = now + intervalMinutes +/- jitterSeconds, or the next wakeAt local time (HH:MM) if that is sooner. Uniqlo India starts sale prices at 02:00 IST (Tuesdays so far), so 02:01 catches them within a minute. One check is 7 API pages of 100 products plus one stock call per sale listing (~130).",
   "watch": {
     "intervalMinutes": 15,
     "jitterSeconds": 60,
