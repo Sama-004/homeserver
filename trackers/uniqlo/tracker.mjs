@@ -39,6 +39,9 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = process.env.CONFIG_PATH || join(HERE, 'config.json');
 const STATE_PATH = process.env.STATE_PATH || join(HERE, 'state.json');
 const NEXT_RUN_PATH = join(dirname(STATE_PATH), 'next-run');
+// Exit code of a check that failed without crashing (a crash exits 1). run-loop.sh pings the
+// healthchecks.io dead-man's switch only after exit 0, so a tracker that keeps failing is reported.
+const CHECK_FAILED = 3;
 const DB_PATH = join(dirname(STATE_PATH), 'uniqlo.db');
 
 // The one secret (NTFY_TOPIC) lives in .env, not config.json. Auto-load it if present.
@@ -605,6 +608,7 @@ async function runOnce(cfg, db, acceptShrink) {
       log(`check attempt ${attempt} failed:`, e.message);
       if (attempt === 2) {
         log('giving up this cycle (database unchanged, no alert)');
+        process.exitCode = CHECK_FAILED;
         await trackFailure(cfg, state, e.message);
         saveState(state);
         return;
@@ -636,6 +640,7 @@ async function runOnce(cfg, db, acceptShrink) {
   if (failed.size > targets.length / 2) {
     const msg = `${failed.size} of ${targets.length} stock calls failed`;
     log(`${msg}, giving up this cycle (database unchanged, no alert)`);
+    process.exitCode = CHECK_FAILED;
     await trackFailure(cfg, state, msg);
     saveState(state);
     return;
@@ -667,6 +672,7 @@ async function runOnce(cfg, db, acceptShrink) {
     } catch (e) {
       // Don't advance the database or record the deals, otherwise they are swallowed. Retry next cycle.
       log('alert push failed, keeping old baseline so it re-fires:', e.message);
+      process.exitCode = CHECK_FAILED;
       saveState(state);
       return;
     }

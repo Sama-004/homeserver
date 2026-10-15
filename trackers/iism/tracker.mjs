@@ -35,6 +35,9 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = process.env.CONFIG_PATH || join(HERE, 'config.json');
 const STATE_PATH = process.env.STATE_PATH || join(HERE, 'state.json');
 const NEXT_RUN_PATH = join(dirname(STATE_PATH), 'next-run');
+// Exit code of a check that failed without crashing (a crash exits 1). run-loop.sh pings the
+// healthchecks.io dead-man's switch only after exit 0, so a tracker that keeps failing is reported.
+const CHECK_FAILED = 3;
 
 // The one secret (NTFY_TOPIC) lives in .env, not config.json. Auto-load it if present.
 // systemd/Docker may instead inject it via EnvironmentFile/env_file — that's fine,
@@ -311,6 +314,7 @@ async function sendDueReminders(cfg, state, now) {
       r.sent = true;
     } catch (e) {
       log('reminder push failed (will retry next wake):', e.message);
+      process.exitCode = CHECK_FAILED;
     }
   }
   // forget reminders for openings more than a day old
@@ -377,6 +381,7 @@ async function runOnce(cfg) {
       log(`check attempt ${attempt} failed:`, e.message);
       if (attempt === 2) {
         log('giving up this cycle (state unchanged, no alert)');
+        process.exitCode = CHECK_FAILED;
         await trackFailures(cfg, state, { all: e.message });
         saveState(state);
         return;
@@ -459,6 +464,7 @@ async function runOnce(cfg) {
     } catch (e) {
       // Don't advance the baseline — otherwise the change is swallowed. Retry next cycle.
       log('alert push failed, keeping old baseline so it re-fires:', e.message);
+      process.exitCode = CHECK_FAILED;
       saveState(state);
       return;
     }

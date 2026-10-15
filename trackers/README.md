@@ -20,7 +20,8 @@ fully self-contained (its own script, config, Dockerfile, README); the root
 trackers/
 ├── docker-compose.yml   # one service per tracker — the orchestrator
 ├── run-loop.sh          # every container's long-lived process: run a check, sleep, repeat
-├── .env                 # shared secrets (gitignored): NTFY_TOPIC, LAT, LON
+├── healthchecks-setup.sh  # one-time: create the healthchecks.io check for each service
+├── .env                 # shared secrets (gitignored): NTFY_TOPIC, LAT, LON, HC_PING_KEY
 ├── chicken-breast/      # each tracker: tracker.mjs + config.json + Dockerfile + README
 │   └── data/            # per-tracker state + next-run (gitignored, survive restarts)
 ├── nimas/
@@ -81,6 +82,33 @@ seeing the old copy of a mounted single file (`run-loop.sh`, each `config.json`)
 `git reset` replaces it, so recreating is what makes those changes apply. Each tracker runs
 one check right after a deploy, then goes back to its schedule.
 
+## Watchdog (healthchecks.io)
+
+A tracker's own pushes can't tell you it's dead: a box that lost power sends nothing, and
+chicken-breast's daily heartbeat kept arriving while every check failed. So every container
+also pings a [healthchecks.io](https://healthchecks.io) check after each **successful**
+check, and healthchecks.io alerts you (email, ntfy, whatever the project has set up) when the pings
+stop for longer than the tracker's interval plus a 2 h grace. One failed check is normal and
+alerts nobody; a tracker that keeps failing, or a box that is off, does.
+
+`run-loop.sh` sends the ping when `node tracker.mjs --once` exits 0, to
+`https://hc-ping.com/$HC_PING_KEY/$HC_SLUG`. `HC_SLUG` is the compose service name, set per
+service in `docker-compose.yml`. Without `HC_PING_KEY` in `.env` nothing is pinged. A ping
+that fails is logged and never delays the next check.
+
+To turn it on:
+
+1. In the healthchecks.io project's **Settings**, create a ping key and a read-write API key,
+   and connect the integrations you want alerts on (all of them get every tracker's alerts).
+2. On the server, add both to `trackers/.env`: `HC_PING_KEY=...` and `HC_API_KEY=...`.
+3. Run `./healthchecks-setup.sh` there once. It creates or updates one check per service
+   (timeout = the tracker's `watch.intervalMinutes`, grace 2 h) and prints a table. It also
+   pings each new check once: a never-pinged check stays "new" and never alerts, so without
+   that a tracker that is already failing would never be reported. It is safe to re-run,
+   for example after changing an interval or adding a tracker.
+4. `docker compose up -d --force-recreate` so the containers pick up `HC_PING_KEY`.
+   Remove `HC_API_KEY` from `.env` afterwards if you like; only the setup script uses it.
+
 ## Adding a new tracker
 
 1. Copy the shape of an existing one into a new directory: `tracker.mjs`, `config.json`
@@ -89,6 +117,10 @@ one check right after a deploy, then goes back to its schedule.
    writes the unix time in seconds of the next check to `next-run` next to the state file,
    and exits. Write it in a `finally` so a failed check still schedules the next one
    (`scheduleNext` in each tracker). `--test-notify` sends a test push and doesn't touch it.
+   Exit 0 only when the check worked and every alert it had to push went out. A check that
+   fails without crashing (retries exhausted, an alert push that didn't go out) sets
+   `process.exitCode = CHECK_FAILED` (3) and still writes `next-run`; a crash exits 1. Only
+   exit 0 pings the watchdog, so a tracker that exits 0 on failure is never reported.
    `nimas/` is the minimal zero-dependency template (plain `fetch`); `chicken-breast/` is
    the "site needs a real browser" variant (Playwright).
 2. Keep the conventions: fail **safe** on scrape/parse errors (log and leave state
@@ -97,6 +129,8 @@ one check right after a deploy, then goes back to its schedule.
    `CYCLE_TIMEOUT`.
 3. Add a service block for it in `docker-compose.yml`: `<<: *tracker`, build context = its
    directory, and `volumes:` with the `run-loop.sh` mount, its `config.json` read-only, and
-   its `data/` for state. If a check can take longer than 5 minutes, set `CYCLE_TIMEOUT`
-   in an `environment:` that starts with `<<: *tracker-env` (see `chicken-tracker`).
+   its `data/` for state, and an `environment:` that starts with `<<: *tracker-env` and sets
+   `HC_SLUG` to the service name. If a check can take longer than 5 minutes, set
+   `CYCLE_TIMEOUT` there too (see `chicken-tracker`).
 4. Push to `main` — the deploy workflow picks it up (it runs `docker compose up` in this directory).
+5. Once deployed, re-run `./healthchecks-setup.sh` on the server to create its watchdog check.

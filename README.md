@@ -16,7 +16,7 @@ Each top-level directory is one independent thing; the only shared pieces are th
 ├── .github/workflows/deploy.yml   # push to main -> ssh over Tailscale -> docker compose up
 ├── trackers/                      # one compose project; each tracker self-contained in a subdir
 │   ├── docker-compose.yml
-│   ├── .env                       # gitignored secrets (NTFY_TOPIC, LAT, LON)
+│   ├── .env                       # gitignored secrets (NTFY_TOPIC, LAT, LON, HC_PING_KEY)
 │   ├── chicken-breast/
 │   ├── nimas/
 │   └── iism/
