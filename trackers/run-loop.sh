@@ -21,7 +21,10 @@ log() { echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $*"; }
 ping_healthchecks() {
   [ -n "$HC_PING_KEY" ] && [ -n "$HC_SLUG" ] || return 0
   (
+    # Node gives each address family 250 ms to connect by default, too tight from behind
+    # Docker NAT: some pings died as ETIMEDOUT with the network fine.
     err=$(HC_URL="${HC_PING_URL:-https://hc-ping.com}/$HC_PING_KEY/$HC_SLUG" timeout -s KILL 10 node -e '
+      require("node:net").setDefaultAutoSelectFamilyAttemptTimeout(2000);
       fetch(process.env.HC_URL)
         .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); })
         .catch((e) => { console.log(e.cause?.code ?? e.cause?.message ?? e.message); process.exitCode = 1; })
