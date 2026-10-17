@@ -1,15 +1,19 @@
-# Official Playwright image ships Chromium matching the Playwright version,
-# so no browser-version mismatch and no system chromium needed.
-FROM mcr.microsoft.com/playwright:v1.50.0-noble
+# The musl build of curl-impersonate, pinned by tag and digest. Beyond musl it links only
+# libstdc++ and libgcc, which node:22-alpine already ships for Node itself. A newer Chrome
+# target means bumping this pin and api.impersonate in config.json together.
+FROM lexiforest/curl-impersonate:v2.2.3-alpine@sha256:e3aeb0b7c8b0951ea83be4a17ed38480e9fd227a4d1d8fe95971cdc87f161811 AS curl
+
+# Plain Node, no browser: one Blinkit API call per check, made through curl-impersonate
+# because Cloudflare blocks Node's own TLS fingerprint.
+FROM node:22-alpine
+COPY --from=curl /usr/local/bin/curl-impersonate /usr/local/bin/curl-impersonate
 
 WORKDIR /app
 COPY package.json ./
-RUN npm install --omit=dev
+# No `npm install` — the tracker has zero dependencies.
 
 COPY tracker.mjs ./
 # config.json and state.json come in via a mounted volume (see docker-compose.yml)
 
-# One check, then exit. docker-compose.yml runs this through ../run-loop.sh, which
-# repeats it on the schedule the tracker writes to data/next-run; state + config are on
-# a volume so each run remembers stock state.
+# One check per process; run-loop.sh re-runs it at the time written to data/next-run.
 CMD ["node", "tracker.mjs", "--once"]

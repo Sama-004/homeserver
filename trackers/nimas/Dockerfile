@@ -1,5 +1,5 @@
-# Plain Node — no browser. Unlike the Blinkit sibling (which needs headless
-# Chromium to clear Cloudflare), NIMAS serves the course table as plain JSON
+# Plain Node — no browser. Unlike the Blinkit sibling (which needs curl-impersonate
+# to clear Cloudflare), NIMAS serves the course table as plain JSON
 # from its ERP API, so native fetch is enough. Node 22 = fetch built in.
 FROM node:22-alpine
 

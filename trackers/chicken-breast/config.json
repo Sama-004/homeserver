@@ -7,11 +7,10 @@
     "url": "https://blinkit.com/prn/haringhata-boneless-frozen-chicken-breast/prid/480046"
   },
 
-  "//location": "Your coords are SECRET (they reveal your home) -> set LAT / LON in the .env file, NOT here. locality is only a non-sensitive hint.",
+  "//location": "Your coords are SECRET (they reveal your home) -> set LAT / LON in the .env file, NOT here. They are sent as the lat / lon headers, from which Blinkit picks the dark store.",
   "location": {
     "lat": null,
-    "lon": null,
-    "locality": "957"
+    "lon": null
   },
 
   "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. Optionally override the server with NTFY_SERVER.",
@@ -22,8 +21,10 @@
     "priority": "high",
     "//remindEveryMinutes": "Keep nagging while it stays IN STOCK: re-ping at most every N minutes. 0 = only alert on the out->in-stock transition. Checks run every ~11-13 min, so any value below ~10 effectively means 'ping on every check'.",
     "remindEveryMinutes": 10,
-    "//heartbeatHour": "Send one low-priority 'still watching' push per day at/after this hour (local time; set TZ in docker-compose). -1 disables. If you ever stop getting it, the tracker is dead.",
-    "heartbeatHour": 9
+    "//heartbeatHour": "Send one push per day at/after this hour (local time; set TZ in docker-compose): low-priority 'still watching' while checks work, 'checks FAILING' when the last good check is over 3 h old. -1 disables. If you ever stop getting it, the tracker is dead.",
+    "heartbeatHour": 9,
+    "//failureAlertHours": "If every check fails for this long, push one warning (reset on the next good check).",
+    "failureAlertHours": 6
   },
 
   "//watch": "When the next check runs: each --once run writes now + intervalMinutes (+/- jitterSeconds) to data/next-run for run-loop.sh. intervalMinutes between checks; jitterSeconds randomizes timing a little so it does not look robotic.",
@@ -32,10 +33,9 @@
     "jitterSeconds": 90
   },
 
-  "//browser": "Leave chromiumPath empty to use Playwright's bundled Chromium (recommended, and what the Docker image uses). On a bare machine where the bundled browser is missing/mismatched, set it to a system chromium, e.g. \"/usr/bin/chromium\". Or set env CHROMIUM_PATH.",
-  "browser": {
-    "chromiumPath": "",
-    "headless": true,
-    "navTimeoutMs": 45000
+  "//api": "The stock check is one POST to Blinkit's product API through curl-impersonate. impersonate is the browser fingerprint it sends (a target the pinned binary in the Dockerfile ships, e.g. chrome150); if Cloudflare starts answering 403, try a newer target. timeoutSeconds bounds one request.",
+  "api": {
+    "impersonate": "chrome150",
+    "timeoutSeconds": 30
   }
 }

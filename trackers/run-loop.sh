@@ -41,8 +41,8 @@ while :; do
   status=$?
   if [ "$status" -ne 0 ]; then
     log "check exited with status $status"
-    # Playwright starts Chromium in its own process group, so killing node leaves it
-    # running. As the container's PID 1, kill whatever the failed check left behind.
+    # Killing node leaves its child processes (chicken-breast's curl-impersonate) running.
+    # As the container's PID 1, kill whatever the failed check left behind.
     [ $$ -ne 1 ] || kill -KILL -1 2>/dev/null
   else
     ping_healthchecks

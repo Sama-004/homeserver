@@ -30,9 +30,6 @@ services:
     environment:
       <<: *tracker-env
       HC_SLUG: chicken-tracker
-      CYCLE_TIMEOUT: 150 # two 45 s page loads plus Chromium startup
-    # A bit of memory headroom for Chromium
-    shm_size: "512mb"
 
   nimas-notifier:
     <<: *tracker

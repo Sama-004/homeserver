@@ -122,7 +122,8 @@ To turn it on:
    `process.exitCode = CHECK_FAILED` (3) and still writes `next-run`; a crash exits 1. Only
    exit 0 pings the watchdog, so a tracker that exits 0 on failure is never reported.
    `nimas/` is the minimal zero-dependency template (plain `fetch`); `chicken-breast/` is
-   the "site needs a real browser" variant (Playwright).
+   the "site is behind Cloudflare bot checks" variant: Cloudflare 403s Node's `fetch` by its
+   TLS fingerprint, so it calls the API through curl-impersonate (Chrome's fingerprint).
 2. Keep the conventions: fail **safe** on scrape/parse errors (log and leave state
    unchanged, never a false alert) and a daily heartbeat push so silence means something is
    broken. A wedged check needs no watchdog of its own: `run-loop.sh` kills it after
@@ -131,6 +132,6 @@ To turn it on:
    directory, and `volumes:` with the `run-loop.sh` mount, its `config.json` read-only, and
    its `data/` for state, and an `environment:` that starts with `<<: *tracker-env` and sets
    `HC_SLUG` to the service name. If a check can take longer than 5 minutes, set
-   `CYCLE_TIMEOUT` there too (see `chicken-tracker`).
+   `CYCLE_TIMEOUT` there too.
 4. Push to `main` — the deploy workflow picks it up (it runs `docker compose up` in this directory).
 5. Once deployed, re-run `./healthchecks-setup.sh` on the server to create its watchdog check.

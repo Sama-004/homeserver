@@ -5,16 +5,25 @@
 //   node tracker.mjs --test-notify   send a test ntfy push and exit
 // In Docker, ../run-loop.sh runs the check and sleeps until the time in next-run.
 //
-// How location works: Blinkit picks the serving "dark store" from lat/lon, which the
-// web app stores in the cookies gr_1_lat / gr_1_lon. We set those cookies, load the
-// product page (this passes Cloudflare as a real browser), and read the structured
-// JSON the page fetches from /v1/layout/product/<prid>. The product snippet carries
-// `inventory` (a count) and `is_sold_out` (bool). In stock == inventory > 0 && !is_sold_out.
+// How it works: Blinkit's web app POSTs to /v1/layout/product/<prid> with `lat` / `lon`
+// headers, and the API picks the serving "dark store" (merchant) from those. The product
+// snippet in the JSON carries `inventory` (a count) and `is_sold_out` (bool). In stock ==
+// inventory > 0 && !is_sold_out. Cloudflare in front of it blocks clients by their TLS/HTTP2
+// fingerprint (Node's fetch, plain curl and headless Chromium all get 403), so the request
+// goes through curl-impersonate, which sends Chrome's fingerprint.
 
-import { chromium } from 'playwright';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { execFile } from 'node:child_process';
+import { setDefaultAutoSelectFamilyAttemptTimeout } from 'node:net';
+
+// Node's happy-eyeballs connect gives each address family only 250ms by default,
+// which is tighter than the real-world RTT to ntfy.sh from behind Docker NAT — the
+// push then dies as a bare "fetch failed" (ETIMEDOUT) even though the network is fine.
+try {
+  setDefaultAutoSelectFamilyAttemptTimeout(2000);
+} catch {}
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = process.env.CONFIG_PATH || join(HERE, 'config.json');
@@ -23,6 +32,8 @@ const NEXT_RUN_PATH = join(dirname(STATE_PATH), 'next-run');
 // Exit code of a check that failed without crashing (a crash exits 1). run-loop.sh pings the
 // healthchecks.io dead-man's switch only after exit 0, so a tracker that keeps failing is reported.
 const CHECK_FAILED = 3;
+// The daily heartbeat calls the tracker unhealthy once the last good check is this old.
+const STALE_HOURS = 3;
 
 // Secrets (NTFY_TOPIC, LAT, LON) live in .env, not config.json. Auto-load it if present.
 // systemd/Docker may instead inject these via EnvironmentFile/env_file — that's fine,
@@ -33,8 +44,7 @@ try {
 } catch (e) {
   console.error('warning: could not load', ENV_FILE, '-', e.message);
 }
-const UA =
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const CURL = process.env.CURL_IMPERSONATE || 'curl-impersonate';
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -46,7 +56,6 @@ function loadConfig() {
   if (process.env.NTFY_SERVER) cfg.notify.server = process.env.NTFY_SERVER;
   if (process.env.LAT) cfg.location.lat = Number(process.env.LAT);
   if (process.env.LON) cfg.location.lon = Number(process.env.LON);
-  if (process.env.CHROMIUM_PATH) cfg.browser.chromiumPath = process.env.CHROMIUM_PATH;
 
   // These must come from .env (or the environment); they are deliberately blank in config.json.
   const missing = [];
@@ -62,12 +71,15 @@ function loadConfig() {
   return cfg;
 }
 
+// checkedAt is the time of the last SUCCESSFUL check; failure is the current run of failed
+// checks ({since, alerted, lastError}), null while checks work.
+const EMPTY_STATE = { inStock: null, lastAlertAt: 0, failure: null };
 function loadState() {
-  if (!existsSync(STATE_PATH)) return { inStock: null, lastAlertAt: 0 };
+  if (!existsSync(STATE_PATH)) return { ...EMPTY_STATE };
   try {
-    return JSON.parse(readFileSync(STATE_PATH, 'utf8'));
+    return { ...EMPTY_STATE, ...JSON.parse(readFileSync(STATE_PATH, 'utf8')) };
   } catch {
-    return { inStock: null, lastAlertAt: 0 };
+    return { ...EMPTY_STATE };
   }
 }
 function saveState(s) {
@@ -75,70 +87,70 @@ function saveState(s) {
 }
 
 // --- the actual stock check -------------------------------------------------
-async function checkStock(cfg) {
-  const { prid } = cfg.product;
-  const launchOpts = { headless: cfg.browser.headless !== false };
-  if (cfg.browser.chromiumPath) launchOpts.executablePath = cfg.browser.chromiumPath;
+// One POST through curl-impersonate. Resolves to {status, body}; rejects only when curl
+// itself fails (DNS, connect, timeout).
+function postLayout(cfg) {
+  const { impersonate, timeoutSeconds } = cfg.api;
+  const args = [
+    '--impersonate', impersonate,
+    '--compressed',
+    '--silent', '--show-error',
+    '--max-time', String(timeoutSeconds),
+    '--request', 'POST',
+    '--header', 'Content-Type: application/json',
+    '--header', 'app_client: consumer_web',
+    '--header', `lat: ${cfg.location.lat}`,
+    '--header', `lon: ${cfg.location.lon}`,
+    '--data', '{}',
+    // The status goes last on stdout, after the body, on a line of its own.
+    '--write-out', '\n%{http_code}',
+    `https://blinkit.com/v1/layout/product/${cfg.product.prid}`,
+  ];
+  return new Promise((resolve, reject) => {
+    execFile(
+      CURL,
+      args,
+      { timeout: (timeoutSeconds + 5) * 1000, killSignal: 'SIGKILL', maxBuffer: 16 * 1024 * 1024 },
+      (err, stdout, stderr) => {
+        if (err) {
+          // Not err.message: it repeats the command line, lat/lon headers included.
+          const why = err.killed ? 'killed after timeout' : stderr.trim() || `code ${err.code}`;
+          return reject(new Error(`curl-impersonate failed: ${why}`));
+        }
+        const i = stdout.lastIndexOf('\n');
+        resolve({ status: Number(stdout.slice(i + 1)), body: stdout.slice(0, i) });
+      }
+    );
+  });
+}
 
-  const browser = await chromium.launch(launchOpts);
+// Pure: the API response -> the product's stock, or an error saying why it can't be trusted.
+function parseProduct(status, body, prid) {
+  if (status === 403 && body.trimStart().startsWith('<')) throw new Error('blocked by Cloudflare (HTTP 403)');
+  if (status !== 200) throw new Error(`API returned HTTP ${status}: ${body.slice(0, 200)}`);
+  let json;
   try {
-    const ctx = await browser.newContext({ locale: 'en-IN', userAgent: UA });
-    await ctx.addCookies([
-      { name: 'gr_1_lat', value: String(cfg.location.lat), domain: 'blinkit.com', path: '/' },
-      { name: 'gr_1_lon', value: String(cfg.location.lon), domain: 'blinkit.com', path: '/' },
-      { name: 'gr_1_locality', value: String(cfg.location.locality ?? ''), domain: 'blinkit.com', path: '/' },
-    ]);
-    const page = await ctx.newPage();
-    // block images/fonts/media to make checks fast & light
-    await page.route('**/*', (route) => {
-      const t = route.request().resourceType();
-      if (t === 'image' || t === 'media' || t === 'font') return route.abort();
-      return route.continue();
-    });
-
-    const url = cfg.product.url || `https://blinkit.com/prn/x/prid/${prid}`;
-    const wantApi = (r) => r.url().includes(`/v1/layout/product/${prid}`);
-    const apiPromise = page
-      .waitForResponse(wantApi, { timeout: cfg.browser.navTimeoutMs || 45000 })
-      .catch(() => null);
-
-    const nav = await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout: cfg.browser.navTimeoutMs || 45000,
-    });
-    if (nav && nav.status() >= 400) throw new Error(`page returned HTTP ${nav.status()} (Cloudflare block?)`);
-
-    const apiResp = await apiPromise;
-    if (!apiResp) throw new Error('did not observe the product API response (layout changed or blocked)');
-    const json = await apiResp.json();
-
-    // find the product strip snippet for THIS product id
-    const snippets = json?.response?.snippets || [];
-    const snip = snippets.find((s) => s?.data && Number(s.data.product_id) === Number(prid) && s.data.inventory !== undefined);
-    if (!snip) throw new Error('could not find product snippet with inventory in API response');
-    const d = snip.data;
-
-    const inventory = Number(d.inventory);
-    const isSoldOut = d.is_sold_out === true;
-    const inStock = inventory > 0 && !isSoldOut;
-
-    // best-effort store + price for nicer alerts (let the page hydrate first)
-    await page.waitForTimeout(1500);
-    let store = null;
-    try {
-      const m = JSON.parse(await page.evaluate(() => localStorage.getItem('merchant') || 'null'));
-      store = m && m.name;
-    } catch {}
-    const price =
-      d?.normal_price?.offer_price?.text ||
-      d?.normal_price?.mrp?.text ||
-      (d?.offer && d.offer?.offer_price?.text) ||
-      null;
-
-    return { ok: true, inStock, inventory, isSoldOut, store, price, prid };
-  } finally {
-    await browser.close();
+    json = JSON.parse(body);
+  } catch {
+    throw new Error(`API returned non-JSON: ${body.slice(0, 200)}`);
   }
+  const snippets = json?.response?.snippets || [];
+  const d = snippets.find((s) => Number(s?.data?.product_id) === prid && s.data.inventory !== undefined)?.data;
+  if (!d) throw new Error(`no snippet for product ${prid} with inventory in the API response (layout changed?)`);
+  // Without a serviceable location the API still returns the product, sold out, with no
+  // merchant. That is "nobody delivers here", not "out of stock".
+  const merchantId = d.meta?.merchant_id;
+  if (!merchantId) throw new Error('no merchant for this location (unserviceable, or lat/lon not applied)');
+
+  const inventory = Number(d.inventory);
+  const isSoldOut = d.is_sold_out === true;
+  return {
+    inStock: inventory > 0 && !isSoldOut,
+    inventory,
+    isSoldOut,
+    store: `merchant ${merchantId}`,
+    price: d.normal_price?.text || null,
+  };
 }
 
 // --- ntfy notification ------------------------------------------------------
@@ -162,65 +174,105 @@ async function notify(cfg, { title, message, priority, tags, click }) {
   log('ntfy push sent ->', cfg.notify.topic);
 }
 
-// --- daily heartbeat: prove the tracker is alive ----------------------------
-// Sends one low-priority "still watching" push per day, at/after notify.heartbeatHour
-// (local time — set TZ in the container). If you ever STOP getting it, something died.
-async function maybeHeartbeat(cfg) {
+const hoursSince = (t, now) => Math.round((now - t) / 3_600_000);
+
+// --- daily heartbeat: prove the tracker is alive AND working -----------------
+// One push per day, at/after notify.heartbeatHour (local time — set TZ in the container).
+// If you ever STOP getting it, something died. It reports the last successful check, so a
+// tracker whose checks all fail says so instead of "still watching".
+async function maybeHeartbeat(cfg, state) {
   const hour = cfg.notify.heartbeatHour;
   if (hour === undefined || hour === null || hour < 0) return; // disabled
   const now = new Date();
   if (now.getHours() < hour) return; // not time yet today
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const state = loadState();
   if (state.lastHeartbeatDate === today) return; // already sent today
 
+  const lastOk = state.checkedAt ? Date.parse(state.checkedAt) : null;
+  const healthy = lastOk !== null && now - lastOk < STALE_HOURS * 3_600_000;
   const status =
     state.inStock === true
       ? `IN STOCK (inventory ${state.lastInventory})`
       : state.inStock === false
         ? 'out of stock'
-        : 'unknown (no successful check yet)';
+        : 'unknown';
+  const lines = healthy
+    ? ['Daily check-in ✅', `Last result: ${status}`, ...(state.lastStore ? [`Store: ${state.lastStore}`] : []), `At: ${state.checkedAt}`]
+    : [
+        lastOk === null
+          ? '❌ No check has ever succeeded.'
+          : `❌ No successful check for ${hoursSince(lastOk, now)}h (last: ${state.checkedAt}, ${status}).`,
+        ...(state.failure ? [`Last error: ${state.failure.lastError}`] : []),
+        'Stock alerts will NOT arrive until this is fixed.',
+      ];
   try {
     await notify(cfg, {
-      title: 'Chicken tracker - still watching',
-      message:
-        `Daily check-in ✅\nLast result: ${status}` +
-        `${state.lastStore ? `\nStore: ${state.lastStore}` : ''}` +
-        `${state.checkedAt ? `\nAt: ${state.checkedAt}` : ''}`,
-      priority: 'low',
-      tags: 'heartbeat',
+      title: healthy ? 'Chicken tracker - still watching' : 'Chicken tracker - checks FAILING',
+      message: lines.join('\n'),
+      priority: healthy ? 'low' : 'default',
+      tags: healthy ? 'heartbeat' : 'heartbeat,warning',
     });
     state.lastHeartbeatDate = today;
-    saveState(state);
   } catch (e) {
     log('heartbeat push failed:', e.message);
   }
 }
 
+// Silence is ambiguous (out of stock vs. tracker broken), so if checks keep failing for a
+// while, say so once. Reset on the next good check.
+async function trackFailure(cfg, state, err) {
+  const now = Date.now();
+  if (!err) {
+    if (state.failure) log(`recovered after failing since ${new Date(state.failure.since).toISOString()}`);
+    state.failure = null;
+    return;
+  }
+  const f = (state.failure ??= { since: now, alerted: false });
+  f.lastError = err;
+  const hours = cfg.notify.failureAlertHours ?? 6;
+  if (f.alerted || now - f.since < hours * 3_600_000) return;
+  try {
+    await notify(cfg, {
+      title: '⚠️ Chicken tracker failing',
+      message:
+        `Checks have failed for ${hoursSince(f.since, now)}h.\nLast error: ${err}\n` +
+        'Check Blinkit manually meanwhile.',
+      priority: 'default',
+      tags: 'warning',
+      click: cfg.product.url,
+    });
+    f.alerted = true;
+  } catch (e) {
+    log('failure alert push failed:', e.message);
+  }
+}
+
 // --- one full cycle: check, diff against state, alert -----------------------
-async function runOnce(cfg) {
+async function runOnce(cfg, state) {
   let result;
   // small retry: Cloudflare / network can hiccup
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      result = await checkStock(cfg);
+      const { status, body } = await postLayout(cfg);
+      result = parseProduct(status, body, Number(cfg.product.prid));
       break;
     } catch (e) {
       log(`check attempt ${attempt} failed:`, e.message);
       if (attempt === 2) {
-        log('giving up this cycle (state unchanged, no alert)');
+        log('giving up this cycle (stock state unchanged, no alert)');
         process.exitCode = CHECK_FAILED;
+        await trackFailure(cfg, state, e.message);
         return;
       }
       await sleep(4000);
     }
   }
+  await trackFailure(cfg, state, null);
 
-  const state = loadState();
   const now = Date.now();
   log(
     `result: ${result.inStock ? 'IN STOCK' : 'out of stock'} ` +
-      `(inventory=${result.inventory}) @ ${result.store || 'unknown store'}` +
+      `(inventory=${result.inventory}, is_sold_out=${result.isSoldOut}) @ ${result.store}` +
       (result.price ? ` price=${result.price}` : '')
   );
 
@@ -232,18 +284,25 @@ async function runOnce(cfg) {
     now - (state.lastAlertAt || 0) > cfg.notify.remindEveryMinutes * 60_000;
 
   if (becameAvailable || remindDue) {
-    await notify(cfg, {
-      title: becameAvailable
-        ? `🐔 ${cfg.product.name} is IN STOCK`
-        : `🐔 Still in stock: ${cfg.product.name}`,
-      message:
-        `${result.inventory} available${result.price ? ` at ${result.price}` : ''}` +
-        `${result.store ? `\nStore: ${result.store}` : ''}\nOrder now 👇`,
-      priority: 'high',
-      tags: 'meat_on_bone,muscle',
-      click: cfg.product.url,
-    });
-    state.lastAlertAt = now;
+    try {
+      await notify(cfg, {
+        title: becameAvailable
+          ? `🐔 ${cfg.product.name} is IN STOCK`
+          : `🐔 Still in stock: ${cfg.product.name}`,
+        message:
+          `${result.inventory} available${result.price ? ` at ${result.price}` : ''}` +
+          `\nStore: ${result.store}\nOrder now 👇`,
+        priority: 'high',
+        tags: 'meat_on_bone,muscle',
+        click: cfg.product.url,
+      });
+      state.lastAlertAt = now;
+    } catch (e) {
+      // Don't advance the baseline — otherwise the restock is swallowed. Retry next cycle.
+      log('alert push failed, keeping old baseline so it re-fires:', e.message);
+      process.exitCode = CHECK_FAILED;
+      return;
+    }
   } else if (!result.inStock && wasInStock === true) {
     log('went out of stock (quiet — no alert)');
   }
@@ -252,7 +311,6 @@ async function runOnce(cfg) {
   state.lastInventory = result.inventory;
   state.lastStore = result.store;
   state.checkedAt = new Date().toISOString();
-  saveState(state);
 }
 
 // --- entrypoints ------------------------------------------------------------
@@ -272,8 +330,10 @@ async function main() {
   }
 
   try {
-    await runOnce(cfg);
-    await maybeHeartbeat(cfg);
+    const state = loadState();
+    await runOnce(cfg, state);
+    await maybeHeartbeat(cfg, state);
+    saveState(state);
   } finally {
     scheduleNext(cfg);
   }

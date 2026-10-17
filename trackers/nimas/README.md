@@ -22,7 +22,7 @@ POST https://api.dialerp.com/api/api/getTemplateDataList   (was apierp.azurewebs
 ```
 
 So the tracker just **calls that JSON API directly with native `fetch`** — no browser, no
-Playwright, no Cloudflare dance. It then:
+curl-impersonate, no Cloudflare dance. It then:
 
 1. Finds the record whose `"Serial No"` equals `course.serialNo` (`BMC-64` by default).
 2. Reads `"Available Seats"` off it.
@@ -80,8 +80,7 @@ ENV_FILE=../.env node tracker.mjs --test-notify   # should buzz your phone
 
 Deploys ride the monorepo's push-to-`main` workflow (see the [root README](../README.md)) —
 the shared `.env` already lives at the homeserver repo root. The image is **tiny** —
-`node:22-alpine` with no dependencies, a few tens of MB, versus the ~2.5 GB Playwright image
-the Blinkit sibling needs.
+`node:22-alpine` with no dependencies, a few tens of MB.
 
 From the repo root:
 ```bash
