@@ -29,7 +29,17 @@
     "//reminderMinutesBefore": "When a booking date/time is announced (popup banner, or a new ski section), push urgent reminders this many minutes before it. 0 = 'bookings are open now'.",
     "reminderMinutesBefore": [60, 10, 0],
     "//failureAlertHours": "If every check fails for this long, push one warning (reset on the next good check).",
-    "failureAlertHours": 6
+    "failureAlertHours": 6,
+    "//scheduled": "Fixed-time pushes (local time), each sent once, on the minute, with Apply/Courses buttons; one more than 20 min late (box was off) is skipped. priority defaults to high. 12 Nov after the 10:00 opening: applicants who don't pay their fee link free their seats, which only show inside the OTP-gated admission portal.",
+    "scheduled": [
+      {
+        "date": "2026-11-12",
+        "times": ["11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"],
+        "title": "IISM: ski seats may have reopened",
+        "message": "Applications from this morning's opening that weren't paid free their seats. Log in to the admission portal and check every snow-skiing batch.\nOffice (9 AM-5 PM): 01954-294075, Mr. Nazir 9797080213",
+        "tags": "skier,bell"
+      }
+    ]
   },
 
   "//watch": "When the next check runs: each --once run writes now + intervalMinutes (+/- jitterSeconds) to data/next-run for run-loop.sh, or the time of the next unsent booking reminder if that is sooner. intervalMinutes between checks. jitterSeconds randomizes timing a little so it does not look robotic.",

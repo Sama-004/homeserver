@@ -67,6 +67,12 @@ function loadConfig({ needTopic = true } = {}) {
         `Set it in ${ENV_FILE} (copy .env.example) or export it in the environment.`
     );
   }
+  for (const s of cfg.notify.scheduled || []) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date)) throw new Error(`config.json: notify.scheduled date "${s.date}" is not YYYY-MM-DD`);
+    for (const t of s.times || [])
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(t)) throw new Error(`config.json: notify.scheduled time "${t}" is not HH:MM`);
+    if (!s.title || !s.message) throw new Error('config.json: every notify.scheduled entry needs a title and a message');
+  }
   cfg.skiRe = new RegExp(cfg.match.skiPattern, 'i');
   cfg.ignoreRe = new RegExp(cfg.match.ignorePattern, 'gi');
   return cfg;
@@ -321,8 +327,53 @@ async function sendDueReminders(cfg, state, now) {
   state.reminders = state.reminders.filter((r) => now - r.at < 86_400_000);
 }
 
-function nextReminderAt(state) {
-  const pending = state.reminders.filter((r) => !r.sent).map((r) => r.fireAt);
+// --- fixed-time pushes from config (notify.scheduled) -------------------------
+// e.g. the hourly "seats may have reopened" nudges the day after a booking opens.
+// `YYYY-MM-DDTHH:MM` without a zone parses as local time (TZ in the container).
+const SCHEDULED_LATE_MS = 20 * 60_000;
+const scheduledSlots = (cfg) =>
+  (cfg.notify.scheduled || []).flatMap((s) =>
+    s.times.map((t) => ({ ...s, key: `${s.date}T${t}`, at: new Date(`${s.date}T${t}`).getTime() }))
+  );
+
+async function sendScheduled(cfg, state, now) {
+  const sent = new Set(state.scheduledSent || []);
+  for (const slot of scheduledSlots(cfg)) {
+    if (sent.has(slot.key) || now < slot.at) continue;
+    if (now - slot.at > SCHEDULED_LATE_MS) {
+      log(`skipping scheduled push for ${slot.key}: ${Math.round((now - slot.at) / 60_000)} min late`);
+      sent.add(slot.key);
+      continue;
+    }
+    try {
+      await notify(cfg, {
+        title: slot.title,
+        message: slot.message,
+        priority: slot.priority || 'high',
+        tags: slot.tags,
+        click: cfg.site.applyUrl,
+        actions: applyAction(cfg),
+      });
+      sent.add(slot.key);
+    } catch (e) {
+      log(`scheduled push for ${slot.key} failed (will retry next wake):`, e.message);
+      process.exitCode = CHECK_FAILED;
+    }
+  }
+  const live = new Set(scheduledSlots(cfg).map((s) => s.key));
+  state.scheduledSent = [...sent].filter((k) => live.has(k));
+}
+
+function nextReminderAt(cfg, state) {
+  const sent = new Set(state.scheduledSent || []);
+  const now = Date.now();
+  const pending = [
+    ...state.reminders.filter((r) => !r.sent).map((r) => r.fireAt),
+    // A due slot still unsent means its push failed: retry in a minute, while it's not too late.
+    ...scheduledSlots(cfg)
+      .filter((s) => !sent.has(s.key) && now - s.at <= SCHEDULED_LATE_MS)
+      .map((s) => (s.at > now ? s.at : now + 60_000)),
+  ];
   return pending.length ? Math.min(...pending) : Infinity;
 }
 
@@ -369,6 +420,7 @@ async function runOnce(cfg) {
   let now = Date.now();
   // Reminders don't depend on the site being up — send them before scraping.
   await sendDueReminders(cfg, state, now);
+  await sendScheduled(cfg, state, now);
   saveState(state);
 
   let result;
@@ -550,12 +602,12 @@ async function main() {
 }
 
 // next-run holds one unix time in seconds: when run-loop.sh starts the next check.
-// A pending booking reminder pulls it forward: those must land on the minute.
+// A pending booking reminder or scheduled push pulls it forward: those must land on the minute.
 function scheduleNext(cfg) {
   const jitterMs = (cfg.watch.jitterSeconds || 0) * 1000;
   const regular = Date.now() + (cfg.watch.intervalMinutes || 60) * 60_000 + Math.floor((Math.random() * 2 - 1) * jitterMs);
-  const reminder = nextReminderAt(loadState());
-  if (reminder < regular) log(`next check at ${fmtWhen(reminder)} for a booking reminder`);
+  const reminder = nextReminderAt(cfg, loadState());
+  if (reminder < regular) log(`next check at ${fmtWhen(reminder)} for a reminder`);
   writeFileSync(NEXT_RUN_PATH, String(Math.ceil(Math.min(regular, reminder) / 1000)));
 }
 

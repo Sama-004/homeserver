@@ -45,6 +45,7 @@ response. Only if *every* page fails is the whole cycle given up (after one retr
 | 🎿 **Ski news** | urgent | a new visible line mentions snow skiing / snowboarding / a ski course (water skiing is ignored) |
 | 📢 **Banner changed** | high (urgent if it mentions skiing) | the popup's red "Bookings will open …" line changes |
 | ⏰ **Booking reminders** | urgent | when the banner (or a new ski section) contains a date and time: pushes at T-60 min, T-10 min, and T-0 ("OPEN now"). The check before a reminder schedules the next one for that minute |
+| 🔔 **Scheduled** | high | fixed local times from `notify.scheduled`, each sent once on the minute, even if the site is down. Set for 12 Nov 2026, hourly 11:00–21:00: unpaid applications from the 10:00 opening free their seats, and seat counts only show inside the OTP-gated admission portal |
 | 👀 **Hint** | default | **hidden** ski content changed, e.g. someone edits the commented-out snow-skiing table to 2026-27 dates before publishing it |
 | 🆕 **Site updated** | low | any other newly visible line (ticker items, course rows) |
 | 🏔️ **Daily check-in** | min | once a day at `notify.dailyHour`: is a snow-skiing schedule up yet, the current banner, any pending reminders. This is the **heartbeat**: if it stops arriving, the tracker is dead |
@@ -96,6 +97,7 @@ Each check is a fresh `node tracker.mjs --once`; compose runs it through
 | `notify.dailyHour` | hour (local) for the daily check-in / heartbeat. `-1` disables |
 | `notify.reminderMinutesBefore` | booking reminder offsets, default `[60, 10, 0]` |
 | `notify.failureAlertHours` | warn once per page after this many hours of failures |
+| `notify.scheduled` | fixed-time pushes: `{date, times[], title, message, tags?, priority?}`. A failed push retries a minute later; one more than 20 min late is skipped |
 | `watch.intervalMinutes` / `watch.jitterSeconds` | check cadence (default hourly, ±2 min) |
 
 ## Notes & gotchas
