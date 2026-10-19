@@ -67,8 +67,11 @@ services:
       <<: *tracker-env
       HC_SLUG: amul-notifier
 
+  # Paused: `docker compose up` (and so every deploy) skips a service whose profile isn't
+  # enabled. Delete the profiles line to run it again.
   amazon-notifier:
     <<: *tracker
+    profiles: [paused]
     build: ./amazon
     container_name: amazon-notifier
     volumes:
