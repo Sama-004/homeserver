@@ -1,0 +1,16 @@
+{
+  "name": "abvimas-notifier",
+  "version": "1.0.0",
+  "description": "Watches abvimas.org (ABVIMAS Manali) for snow-skiing booking notices, booking openings and seat counts, and pushes ntfy alerts + booking-time reminders.",
+  "type": "module",
+  "bin": {
+    "abvimas-notifier": "tracker.mjs"
+  },
+  "scripts": {
+    "check": "node tracker.mjs --once",
+    "dump": "node tracker.mjs --dump"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

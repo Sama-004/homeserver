@@ -1,0 +1,40 @@
+{
+  "//": "------------------------------------------------------------------",
+  "//site": "ABVIMAS Manali (abvimas.org) is server-rendered PHP. noticesUrl = the Notice Board table, where every booking opening is announced (for skiing: one notice per batch, posted 1-6 days before, e.g. 'Booking for Basic & Advance Skiing Course [27-01-2026 to 09-02-2026] Will be open on 24th January, 2026 at 11:00 AM'). applyFirstUrl = Apply Online step 1, whose Session dropdown lists the open sessions. Step 2 (/course/apply-second-step/<sessionId>/<activityId>/<sessionName>/<activitySlug>) is the booking table with Available Seats; activityId 2 = Skiing/Snowboarding. courseUrl = the Basic Snow Skiing course page with its seat chart (activity codes, dates).",
+  "site": {
+    "base": "https://www.abvimas.org",
+    "noticesUrl": "https://www.abvimas.org/notices/",
+    "applyFirstUrl": "https://www.abvimas.org/course/apply-first-step",
+    "courseUrl": "https://www.abvimas.org/course/basic-skiing-course/",
+    "activityId": 2,
+    "activitySlug": "Skiing--Snowboarding",
+    "timeoutMs": 30000
+  },
+
+  "//match": "skiPattern: a notice or booking row counts as skiing if it matches (word-bounded, so 'skill' doesn't). targetPattern: the course you want (Basic Snow Skiing) — its rows get seat-change alerts; every other skiing row only alerts when it first appears.",
+  "match": {
+    "skiPattern": "\\bski(s|ing)?\\b|snow\\s*-?\\s*board",
+    "targetPattern": "basic.*ski"
+  },
+
+  "//notify": "Your ntfy topic is SECRET (it is the only password on free ntfy.sh) -> set NTFY_TOPIC in the .env file, NOT here. reminderMinutesBefore: when a notice says when booking opens, urgent pushes this many minutes before (0 = 'open now'). lowSeats: one high-priority push when your course's seats drop below this.",
+  "notify": {
+    "type": "ntfy",
+    "server": "https://ntfy.sh",
+    "topic": "",
+    "priority": "high",
+    "dailyHour": 9,
+    "reminderMinutesBefore": [180, 60, 10, 0],
+    "lowSeats": 10,
+    "failureAlertHours": 6
+  },
+
+  "//watch": "intervalMinutes between regular checks: a skiing booking notice can come as little as ~23 h before opening, so check often. Around a known opening (fastBeforeMinutes before to fastAfterMinutes after) it checks every fastIntervalSeconds, so the 'booking is LIVE + seats' push lands within a minute. jitterSeconds randomizes timing a little.",
+  "watch": {
+    "intervalMinutes": 10,
+    "jitterSeconds": 60,
+    "fastIntervalSeconds": 60,
+    "fastBeforeMinutes": 15,
+    "fastAfterMinutes": 60
+  }
+}

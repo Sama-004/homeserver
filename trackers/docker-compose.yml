@@ -55,6 +55,18 @@ services:
       <<: *tracker-env
       HC_SLUG: iism-notifier
 
+  abvimas-notifier:
+    <<: *tracker
+    build: ./abvimas
+    container_name: abvimas-notifier
+    volumes:
+      - ./run-loop.sh:/run-loop.sh:ro
+      - ./abvimas/config.json:/app/config.json:ro
+      - ./abvimas/data:/app/data
+    environment:
+      <<: *tracker-env
+      HC_SLUG: abvimas-notifier
+
   amul-notifier:
     <<: *tracker
     build: ./amul
