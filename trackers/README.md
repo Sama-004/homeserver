@@ -10,6 +10,7 @@ fully self-contained (its own script, config, Dockerfile, README); the root
 | [`chicken-breast/`](chicken-breast/) 🐔 | Blinkit stock for frozen chicken breast at my dark store | [README](chicken-breast/README.md) |
 | [`nimas/`](nimas/) 🏔️ | Seat availability for the NIMAS Basic Mountaineering Course (BMC-64) | [README](nimas/README.md) |
 | [`iism/`](iism/) 🎿 | IISM Gulmarg site for the snow-skiing course schedule + booking date (with exact-time booking reminders) | [README](iism/README.md) |
+| [`iism-booker/`](iism-booker/) 🎟️ | Every 15 s: seats in every allowed IISM batch (Gulmarg Basic, Kargil Basic, Snowboarding). Books the first open seat itself with headless Chromium + the autofill userscript, then pushes a screenshot | [README](iism-booker/README.md) |
 | [`abvimas/`](abvimas/) ⛷️ | ABVIMAS Manali: snow-skiing booking notices (with exact-time booking reminders), the booking going live, and Basic Skiing seats | [README](abvimas/README.md) |
 | [`amul/`](amul/) 🥛 | Amul whey protein + protein lassi/buttermilk stock at pincode 700032 | [README](amul/README.md) |
 | [`amazon/`](amazon/) 📚 | Amazon.in stock for the Kobo Clara BW eReader (a product list, via Kobo's brand store page). **Paused** (`profiles: [paused]` in compose) | [README](amazon/README.md) |
@@ -31,6 +32,8 @@ trackers/
 │   └── data/
 ├── abvimas/
 │   └── data/
+├── iism-booker/       # long-lived: seat checks + headless Chromium booking
+│   └── data/            # autofill.user.js (copied by hand), booked.json, shots/
 ├── amul/
 │   └── data/
 ├── amazon/

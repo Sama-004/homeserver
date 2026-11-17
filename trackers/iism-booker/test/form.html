@@ -1,0 +1,1329 @@
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta http-equiv="Content-Language" content="en" /><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><title>
+	IISM
+</title><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" /><meta name="description" /><link rel="stylesheet" href="css/bootstrap.min.css" /><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" /><link href="css/side-nav.css" rel="stylesheet" /><link href="css/custom.css" rel="stylesheet" /><link rel="stylesheet" type="text/css" href="css/loader.css" /><link href="css/responsive.css" rel="stylesheet" /><link href="css/aos.css" rel="stylesheet" />
+    <script type="text/javascript">
+
+        function checkFileSize(inputFile) {
+            if (inputFile.files && inputFile.files[0].size > 1048576) {
+                alert("File Size Too Large.Only File Upload Lessthan 1MB"); // Do your thing to handle the error.
+                inputFile.value = null; // Clear the field.
+            }
+        }
+    </script>
+    <style>
+        .chechbox_space span {
+            display: flex;
+        }
+
+            .chechbox_space span input {
+                margin-right: 5px;
+            }
+
+        .ajax__calendar_container TABLE {
+            width: 100%;
+        }
+
+        .ajax__calendar {
+            z-index: 9999 !important;
+        }
+    </style>
+    <style>
+        .success_msg {
+            text-align: center;
+            display: block;
+            color: green;
+            text-transform: capitalize;
+            font-weight: bold;
+        }
+
+        .unsuccess_msg {
+            text-align: center;
+            display: block;
+            color: red;
+            text-transform: capitalize;
+            font-weight: bold;
+        }
+    </style>
+
+<link href="/WebResource.axd?d=lCPhazFsyYmbWvBDMDcIVx7AmHu07Baw7cu2DMnjBKl4twatRiIR7Vyxz0Z3ia04mJ6HGCVM_2cLY6MTZlcxD7TDi3FAiniPLf_DAKzeS1H8F42ew2Zge2qTG2u8OqHCk5enbPObusADrqVo4xdXRkorj_QDHEA5vcEl_h8sQq41&amp;t=636668282680000000" type="text/css" rel="stylesheet" /><link href="/WebResource.axd?d=5m4DjhgLcn0tnP4iH0lK1V3ofd8UzxondJfRp46PpNiOpcONaYczFLyjlrQNCyYNWkNt4-s0hNRTq9b8Oy0wYPcYGadrPBulBgMQpPXimvtcT5yAOQZnNos9P9YcFox3zd62BsyD4TpRcMW1m_7Saw2&amp;t=636668282680000000" type="text/css" rel="stylesheet" /></head>
+<body>
+    <form method="post" action="./admission_form.aspx?mobile=123456789" onsubmit="javascript:return WebForm_OnSubmit();" id="form1" enctype="multipart/form-data">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUJNDQwMjQ4MTk1D2QWAgIDDxYCHgdlbmN0eXBlBRNtdWx0aXBhcnQvZm9ybS1kYXRhFhQCAw8PFgIeBFRleHRlZGQCBw8QDxYGHg1EYXRhVGV4dEZpZWxkBQpDb3Vyc2VOYW1lHg5EYXRhVmFsdWVGaWVsZAUIQ291cnNlSWQeC18hRGF0YUJvdW5kZ2QQFQMNU2VsZWN0IENvdXJzZR5Tbm93IFNraWluZyBDb3Vyc2VzIGF0IEd1bG1hcmcWTU9JIENvdXJzZXMgYXQgR3VsbWFyZxUDATABNAIxMhQrAwNnZ2cWAWZkAg0PEA8WBh8CBQ9Db3Vyc2VMZXZlbE5hbWUfAwUNQ291cnNlTGV2ZWxJZB8EZ2QQFQETU2VsZWN0IENvdXJzZSBMZXZlbBUBATAUKwMBZxYBZmQCEw8QDxYGHwIFElNjaGVkdWxlQ291cnNlTmFtZR8DBRBTY2hlZHVsZUNvdXJzZUlkHwRnZBAVARZTZWxlY3QgU2NoZWR1bGUgQ291cnNlFQEBMBQrAwFnFgFmZAIdDxAPFgYfAgUJU3RhdGVOYW1lHwMFB1N0YXRlSWQfBGdkEBUoDFNlbGVjdCBTdGF0ZRtBTkRBTUFOIEFORCBOSUNPQkFSIElTTEFORFMOQW5kaHJhIFByYWRlc2gUQU5ESFJBIFBSQURFU0ggKE5FVykfQU5ESFJBIFBSQURFU0goQkVGT1JFIERJVklTSU9OKRFBUlVOQUNIQUwgUFJBREVTSAVBU1NBTQVCSUhBUgpDSEFORElHQVJIC0NIQVRUSVNHQVJIFkRBRFJBIEFORCBOQUdBUiBIQVZFTEkNREFNQU4gQU5EIERJVQVERUxISQNHT0EHR1VKQVJBVAdIQVJZQU5BEEhJTUFDSEFMIFBSQURFU0gRSkFNTVUgQU5EIEtBU0hNSVIJSkhBUktIQU5ECUtBUk5BVEFLQQZLRVJBTEEHTEFEQUtIIAtMQUtTSFdBREVFUA5NQURIWUEgUFJBREVTSAtNQUhBUkFTSFRSQQdNQU5JUFVSCE1FR0hMQVlBB01JWk9SQU0ITkFHQUxBTkQGT0RJU0hBClBVRFVDSEVSUlkGUFVOSkFCCVJBSkFTVEhBTgZTSUtLSU0KVEFNSUwgTkFEVQlURUxBTkdBTkEHVFJJUFVSQQ9VVFRBUiDCoFBSQURFU0gLVVRUQVJBS0hBTkQLV0VTVCBCRU5HQUwVKAEwAjM1ATICMzcCMjgCMTICMTgCMTABNAIyMgIyNgIyNQE3AjMwAjI0ATYCMzgBMQIyMAIyOQIzMgIzOQIzMQIyMwIyNwIxNAIxNwIxNQIxMwIyMQIzNAEzATgCMTECMzMCMzYCMTYBOQE1AjE5FCsDKGdnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2cWAWZkAiMPDxYCHwEFATBkZAIrDw8WAh8BBQEwZGQCRQ8PFgIfAWVkZAJRDw8WAh8BZWRkAoMCDw8WAh8BZWRkGAEFHl9fQ29udHJvbHNSZXF1aXJlUG9zdEJhY2tLZXlfXxYBBQljaGtJQWdyZWXq1heC9aKuEW1xvvVesouzwsKhZh6M+KDLlYSprhsRTg==" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['form1'];
+if (!theForm) {
+    theForm = document.form1;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/WebResource.axd?d=j1epCLSHxrBukWevG8HWkg60cwktvqrBC-Ivx93EsM1jNOVtzxPUl2B7WIpmrC28BvL2Dbft8lkkoebDzdvAr3GSLrmwwjb2dvEKpiG41dw1&amp;t=638032907993915279" type="text/javascript"></script>
+
+
+<script src="/ScriptResource.axd?d=DO4DmooADIycZ6-zmZK4cdDck_Yl41V4BH8YE6zlj05gnHoQ7XaaDalVrNuvL3LppYWGIsoqFFkUy3BKnK6d2Sj6spNGgthZVCyQXSOI-CP1qqtP9KVX9fKovPHgmYUM5pPODqnJUy3nar_ksSfXbcRGcCFSmqZpXYafv4bvB4A1&amp;t=2265eaa7" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=sM0do8D0tQ969gFb3Q-0MvPWvkM4HUT9IuBm__rVaUEP-AqRnNxq_zV1c14K7OeA8NyvFOZvis6tMraaplCGwCw0xaj_q6oNTfeoaCFaAx2yth0bQ_T7eMgTCZlki4BagZmIZxEDj0QnGcjNUFishA2&amp;t=7f16157c" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="/ScriptResource.axd?d=ESbq2_MpfFuagz8RHEIps4ubbErBRCjZIn72cZ7II3V5P9tOiVJ7TwnCfsrRR7bvhcqMpJ81PZ8q9FNihKW8MJK97nbLyE8X4I8N42NUOfWPRCeFD6pGZcYOoNyUpavG5zLMUGIhc8d9FNNQLFoGWA2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=kis4JoHY5xNeTZvTtAjIqIEX0SbtmyY8IFpE3IyNuP1_AKdVrL9tRKCq8SsEO0kJ1Cx6kZCkg2AZGyqC9gRcDG5nnTUC0Za4S_L90pCyQ4tMhaCiH4fRanLto0SEW2o8qKJjF5aWTK9au89ycDuuug2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=ruxbXo7POidrTJV5Ym-WqJRmCbJKY-gHRNRL8qT4BI-fg22hlJXkMTV0juNOZ54ULKQfb8HYi0lCqu1h4ItazhV_x76QYrHQGX7P6bonmxrVuDjQRQZG-fCT8c5Cf6HnIz5O8fvN3-BynEgWnT515Q2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=LXeRx46lvGtI4wZL8Ejqvgfc65NrDlIGZpyi4AqLeqQqyLqQFO2gYeDSiIRfs3Cm43rU1sWLJSK33p6_nORxFAyVcVZZPVeQDKGmefCW78l0WrUNObyzwLq1tghWCUsayKM_gw5SpGcDwiOoVN-Lig2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=PHopG4WM7joBb-0aC6_-qkcoQ5vFW7twJ1m_qAjnO4CXUwM6R4522YyZfKNd428rMRh9dGUKHvuMP-z62iQsCHP5bkrvYnthQfjylX1P9dxSMMm0S7p8NQ-DI0SZbdoX2uTaDOc2DvxysxyTnaiMKg2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=OV0TgkfYYjYoVzpAF-GMD_BelvjIPj4dZBY6zc0dqg8Lxk4iF2dqIp1124nRhsE7rRVrn8bE1SdvjLIU-Xm3NTfGF2BegEYdcAGWXfgm2hRqiaO656ZLsn5R8T7Y08ARdxQLYkVkJsgy-VFykEf9j1LKKBY259-ZH1qnA7wGugQ1&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=aSlsoFmMJLWDWH9LY2TzKs01ly2DZqs50TyBhKr9vEMjRpg-CAxaCbj06SDnKEYxjHtfNvC0_ejuHvOQLGYLOHIm_W73z3ekniBR85iJqh8ye1egcHae_cxzSh1jX_joi3vc1tJoZvW978rM19DDkJr6HQBsdFtJu4h6eE2pOLY1&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=Y-AAbchG6Vh9sp7RjuYKe9wqBqIsd-MzgB8hJX3hIbAsSDHUwe9WD74Z5Vn_01atYyaKlzCoiRW90WFaBoIfPMt2E1_807M_hvW-DREEl7P1_19iDq--bbs8ivwqy_htWRM8ME-5bfwXgvuqRW7YnS-AGVe_zusEL10bDGxjNQk1&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=eqNrw93CefSHp6A2lwLoQelACccn00WxvoI7H40uTd1uM5J_n4Un3UZCjIfXxaNrcn04cAjLsLXFDRxJ0_movhsuV68Bc4mIwowqv7Z8Q5b3fZX---JMEcLQvrSxP5wAaIFP8uLgwfVAPmUI8UrYsA2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=yGPc1MsmWyvDPbFQivKBGRVq3hMCaYFlFjW5qEvq74sCoOn86VHHTSX1HE13CvFl_RAbjOMBBUNOL6KLKh2QL-7Dbf1QGHmWzM31Do5VNHU58gFSRGBpQXmufGUL_FjvQYiDliVgW3Vbg_m2TP1liA2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=pjXZoTsPIaDGt_JcXYF_JGX95Odb4XxQeV_k1jyKHJ4oN4PA5iEcAHo7p7eK25atzxkT_Ysp323hV8qKMDqZ4oxQEQUYVz3vFcveXu8GlyqwlTw9Nj5n0vnH1-KDOnUWNIrSEA7XwQ_E2V6tktLPTg2&amp;t=7f16157c" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=GdlXthvSuH4ZF-VY5DXsoBsYa7buzEUJ9Uzh3V0OK9QYuzaGC_aH0KCGgRPuVhAKRTIexzy08N-byU0XCvuKZOEdvWhQ3gc6y_OZDPIWtdYpfuBeBTk7bTdq_2_EaN1_fQQk4btejO8Qn4rI43CpAcoB9ZFfwiYk1X8I4phPfRY1&amp;t=7f16157c" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+function WebForm_OnSubmit() {
+if (typeof(ValidatorOnSubmit) == "function" && ValidatorOnSubmit() == false) return false;
+return true;
+}
+//]]>
+</script>
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="25909948" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdAIQBg0pHMOscDZVkRwSaMlEF+Op8RGKWGWfj+HAwi/kKpfP++rfzmjTEPdmSkFMgLb1AEKTdEUeWTXGUgRAh4Azu4kwWhrww0LxGOJm3e6P0tvxtRmKeYy8tVo7jUN2RrXwRECF2yz3GhELDNED1aROJ/mBOwCWjmwFbfvkncfwLtu2TDCuJ9RkrfhbK7Pc0JYYG5MnWBf2wXRxMPvi+2D9m/Vg7i6UWqUdJnd9ngiqcDqPOXTmZQfYc2REmfnDYbIhtSdjYSPYCjQhVX3EtlHllh5uLsB0NQf6ppfvEyRcAWhr1Xc6rcltUoeZxY4L6d94uAKqfG/9TC1GPPf140Mq8x5WNIDCt7Ri3eX2Mz7VsFr/lAarKmcHx74i4JDerFd2EQLpLZ5sENyVOFb2895Qv50otit26bAtG2Trjwy1+drSzcwePPbdOUiF9m973SI5Ejn4GGtVhkn2NT7tYroNcitlm/EInLAtd3FovkVAwqpdXBym/BOaEG55Wd2/jljN8Pzz+OnI6pFCh8VZOavEt4T4z5Xxx0sSJiZUlKtaaMfARJVEPHTS39ZoOkuvYo/+fb0npS/upVZ7xKJ16et/6bC1QobaPU9JAtr6A+oo8lGcyzqCgtk9BTRW6Qq+JPAzdkl1laBDywWlItD0NUf1sBsae1I+WeHPonljPMHG+ybCM43Bcz3/cFlP7dWnbHMKYIvA1huq8nEdg6pSH/t6orY//H3XIL1bROCEc2JmFg0YfIEPdDSU/3PlkB9WR6tB80W8X8bNkVoxfkRKyQz288Af8rtAUWBQjowfe3uPbWvjrmBc3pP6jb0RGQ9amv8ncfZTh/oFBCf2IAIT34lRtY+H7+ckgNv97ee4+k55xxWGQXhvMzODBEyiHcQbrL4GHuKez/yABDhrtLVm6Mm8DtzLDs7iYrJCWBBAnWDr+S1WOOqboZ11pOwGh3ugxZNzcPDAQW5eJeHX+CDK1wqc+aaBxRlJ5ugyFKvnYmLjVT0vIUtnPl0mwbUXsNNcrQ7NX/SswF9IT5bFsyTvw0sFe+ud5/Rluz9VWHG2Xb1otr5ZB4ztDAjnZaKPcc9BXbiyJDcrvldkdmEwShhIXUSY4vD1VDOKCCdckv8yvejRbx9S2vqh4SkAhnFskipXTBiD7AcileuF52ofix2cj3WNN9/AhxRfjzn5J8spNCpVZePZWngXP/32HjY1XI5gE7lVytjl0U77IPCo2zFGCiH+OjD5UjLWiCulK5w5930VzTqKudIqMcnsMnQHPxCzzHf+iekNime+KWysngO3yz9s59HPLHoElQmmCXoq/ultF6nbKjQu6Sb/jBfET2Tw8baS47oDnqloJekFEic6jJLBJ7qM6CWabl8ZKTlSSkWx8rh4v/DO4/n9xNaOD3/8RcZ/zZu3PGFAijAqRywKQVLzeRnfdek1DHUDQFG+UW3XcqhMM7M4pTGkSVzj0Vn0hBS6MC7wlq3rhrkLgHhMe1nBaJWWqcz3WxhWS31Fe2JJZdvxjCQrA6HErXde8N42ZZEqODU+jqeASJtrTNoruw6zPTZLDvtntdXCTMmBV9k5FZZap+fGubMzflqMtt7g3ozGkHyz/pea7OLZyqrYkvWEyczbOP6/E6gvn5MSr/CRz3GXzGwRiIWSElsxfYYpsqQGRPSjXs/aCUl0JVwqZAzF9MOG3yinVcMzrSq2WC6HE73VjZBuBNwyi67jxsK9P90De7zVFebbK2RhV9wnzEoIV+9VqVo4E+4mZdyHXAv+igrRilFOQSOBhn7jLmlIBMZ8dVwcaLmib/JkF5vaD8PWmP4fcLlu+ze01why53YmuR7GoyV0f+6ABoj5uc2O7FB5NeYIiS0VG8Wc94iTT6soWQfVKLOSSFNDnz7ohXGLXeF7D6oLM29AcoJDCXz5jM4oTCgKdbzX3KSEq9b2jBwgA76S9sZAriAvDeUzr0Nv4HVbSRC/YdUe1hM+mBhh6CKILqw5OslRNwS/sNAsZ+jp5xC+d3ejVB8dLbNQOxO91jnPsMvJNxx9/VVR2JhBcM0Uj8MM2mj3lqloM/hprNA7/ea++8whKfQVl56iGfvCYfxjiXm+ECpaTT4wGcvhcfETCj2FKrcxqco1AGkqve7GgWLdDL9G268nRSu9QkR9cPRRu7PDIaIHO0Sh87s5w023wdJNITO6QOfARu4UImp0ZVWCfSmu2sR9/zxW6hQB1+9r8Ayf7SlUNqwzmxiM/QzyMxCuE02Si1Ikf/fxqbT8QRP0jiPjEWCFQrZ37sXbLbfKqC+4U6bjv+eY4ROOOl8HgsMydpyA+v+6NMk2oCWJJyakMsJB+I44RoKe2nsvzotuEaIaHVvKv93EanLJcINChvzinlmvaQgHltwOHJGPUSrxEurR0IVV7wVj+95w13Zg36+6ZQ06rLe+ci3f7RFGdsQ0OXuXj5Xx2CKtwW7Tx3DzB50rBBIDwHCyv4G3odzt+IZgcilgS0aDFNDz/+hZ4RF0teQoiaaTy9wrgjYaQJslZP9Cny6DbYMpkCvvJIIq9C371cHdqxyIEvIUqrOMX2Eo672kYJETpQGsSvMlSQWtUFcWWFQU0Jxhd3EJZGa8BudknoiWzJ0FPPMABLb3wfFnXF83v/kFs6KeIW+Qpniusr32HU3r3inaYK30UpXw0ALNWoaoKWgmLvMO3e039KXbIqIe/V59Eyjbtfj/AhsQOUjNHm94WLowMoEOyU0HA9xCTTAVSR6a/SWgLoBXbbw+5LJiBE7poviSCVRjbazzmltaUM7aEAN+g9cP/m12/Ddi58i/dsQ6aLnYJIUBmg4lJqesA4p2BUTWnNpi28pYEunZROmPZgxpOmL0aLkU=" />
+</div>
+        <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('scriptmanager1', 'form1', [], [], [], 90, '');
+//]]>
+</script>
+
+
+        
+        <!-- <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script> -->
+
+        <header class="header">
+            <section>
+                <div class="row mx-0">
+                    <div class="col-2 linear_line3"></div>
+                    <div class="col-2 linear_line1"></div>
+                    <div class="col-2 linear_line2"></div>
+                    <div class="col-2 linear_line4"></div>
+                    <div class="col-2 linear_line5"></div>
+                    <div class="col-2 linear_line3"></div>
+                </div>
+            </section>
+            <div class="container-fluid sec_row">
+                <div class="d-sm-flex mx-0 align-items-center justify-content-between">
+                    <div class="ll1">
+                        <div class="logo_div d-flex align-items-center">
+                            <a href="https://www.iismgulmarg.in/">
+                                <img src="images/logo.jpg" alt="" class="img-fluid logo"></a>
+                            <h2>
+                                <span class="sp1">Indian Institute of </span>
+                                <span class="sp2">Skiing & Mountaineering</span>
+                                <span class="sp3">Government of India, Ministry of Tourism</span>
+                            </h2>
+                        </div>
+                    </div>
+                    <div class="LL3">
+                        <div class="d-flex align-items-center">
+                            <a href="#">
+                                <img src="images/Emblem_of_India.png" alt="" class="img-fluid LL3_img1"></a>
+                            <a href="https://www.incredibleindia.org/en.html" target="_blank">
+                                <img src="images/logo-increble.png" alt="" class="img-fluid LL3_img2"></a>
+                        </div>
+                    </div>
+                    <div class="ll2 mt-3 ml-4">
+                        <div class="d-flex justify-content-end">
+                            <a href="Admission_instructions.aspx" class="btn btn_com bg_red px-4 mb-1 position-relative">Apply Online Admission
+                                <img src="images/new-gif.gif" alt="" height="24px" class="gif-img"></a>
+                            <ul class="nav top-social justify-content-md-end mb-3 justify-content-center">
+                                <li><a href="https://www.facebook.com/people/IISM-Gulmarg/61550027926323/" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
+                                <li><a href="https://twitter.com/iism__official" target="_blank">
+                                    <img src="images/twiiter-new.png" width="28px" alt="">
+                                </a></li>
+                                <li><a href="https://www.instagram.com/iism_.gulmarg/" target="_blank"><i class="fab fa-instagram"></i></a></li>
+                                <li><a href="https://www.youtube.com/channel/UC_4D5fmc1vvYc9cPpN55I-A" target="_blank"><i class="fab fa-youtube"></i></a></li>
+                            </ul>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <section class="navmenu">
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="container-fluid">
+                        <div class="collapse navbar-collapse justify-content-between" id="navbarSupportedContent">
+                            <ul class="navbar-nav">
+                                <li class="nav-item"><a href="https://www.iismgulmarg.in/" class="nav-link">Home</a></li>
+
+                                <li class="nav-item sub-menu-parent">
+                                    <a href="#" class="nav-link">Courses</a>
+                                    <ul class="sub-menu">
+                                        <li><a href="Courses_By_IISM.html">Courses By IISM</a></li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item sub-menu-parent">
+                                    <a href="contact.html" class="nav-link">Contact us</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </section>
+            <div class="menu_mobile">
+                <a class="js-menu-open menu-open" href="javascript:void(0);">
+                    <img src="images/menu.png" alt="" class="img-fluid">
+                </a>
+            </div>
+        </header>
+
+
+        <!-- side-nav-containe html -->
+        <div class="js-side-nav-container side-nav-container">
+            <div class="js-side-nav side-nav">
+                <a href="javascript:void(0);" class="js-menu-close menu-close"><i class="fas fa-times"></i></a>
+                <div class="sidebar_navigation">
+                    <div class="rgt_btn">
+                        <a href="images/pdf/EI.pdf" target="_blank" class="btn btn_com bg_red px-3 position-relative mb-2 ml-0">Engagement of Instructors<br>
+                            (Water ski)
+                            <img src="images/new-gif.gif" alt="" height="24px"></a>
+                        <a href="images/pdf/iism__img.pdf" target="_blank" class="btn btn_com bg_red px-3 position-relative mb-2 ml-0">Engagement of Instructors<br>
+                            (short trek)
+                            <img src="images/new-gif.gif" alt="" height="24px"></a>
+
+                    </div>
+                    <ul class="nav flex-column" id="mobNav">
+                        <li><a href="https://www.iismgulmarg.in/">Home</a></li>
+
+                        <li><a href="Courses_By_IISM.html">Courses By IISM</a></li>
+                        <li><a href="Contact.html">Contact us</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- side-nav-containe html -->
+
+
+        <section class="About_page online_admission">
+            <div class="container">
+                <div class="shadow box_add">
+                    <h2 class="titleHead text-center">Online Admission for Skiing & Mountaineering Programmes</h2>
+                    <hr>
+                    <div class="pt-4">
+                        <span id="lblMsg"></span>
+                        <input type="hidden" name="hdfAdmissionFormId" id="hdfAdmissionFormId" value="0" />
+                        <fieldset>
+                            <legend>Course Details</legend>
+                            <div class="row">
+                                <div class="col-sm-10">
+                                    <div class="row">
+                                        <div class="form-group col-md-3">
+                                            <label>Select Course<span style="color: red;">*</span> </label>
+                                            <select name="ddlCourse" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ddlCourse\&#39;,\&#39;\&#39;)&#39;, 0)" id="ddlCourse" class="form-control">
+	<option selected="selected" value="0">Select Course</option>
+	<option value="4">Snow Skiing Courses at Gulmarg</option>
+	<option value="12">MOI Courses at Gulmarg</option>
+
+</select>
+                                            <span id="rfvddlCourse" style="color:Red;display:none;"></span>
+                                            <input type="hidden" name="vcerfvddlCourse_ClientState" id="vcerfvddlCourse_ClientState" />
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label>Course Level<span style="color: red;">*</span> </label>
+                                            <select name="ddlCourseLevel" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ddlCourseLevel\&#39;,\&#39;\&#39;)&#39;, 0)" id="ddlCourseLevel" class="form-control">
+	<option selected="selected" value="0">Select Course Level</option>
+
+</select>
+                                            <span id="rfvddlCourseLevel" style="color:Red;display:none;"></span>
+                                            <input type="hidden" name="vcerfvddlCourseLevel_ClientState" id="vcerfvddlCourseLevel_ClientState" />
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label>Schedule of course<span style="color: red;">*</span> </label>
+                                            <select name="ddlScheduleCourse" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ddlScheduleCourse\&#39;,\&#39;\&#39;)&#39;, 0)" id="ddlScheduleCourse" class="form-control">
+	<option selected="selected" value="0">Select Schedule Course</option>
+
+</select>
+                                            <span id="rfvddlScheduleCourse" style="color:Red;display:none;"></span>
+                                            <input type="hidden" name="vcerfvddlScheduleCourse_ClientState" id="vcerfvddlScheduleCourse_ClientState" />
+                                            <input type="hidden" name="hdfTypeOfCapacitySheet" id="hdfTypeOfCapacitySheet" value="ScheduleCourseWise" />
+                                            <input type="hidden" name="hdfCapacitySheetAllocationId" id="hdfCapacitySheetAllocationId" value="0" />
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label>State<span style="color: red;">*</span> </label>
+                                            <select name="ddlState" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ddlState\&#39;,\&#39;\&#39;)&#39;, 0)" id="ddlState" class="form-control">
+	<option selected="selected" value="0">Select State</option>
+	<option value="35">ANDAMAN AND NICOBAR ISLANDS</option>
+	<option value="2">Andhra Pradesh</option>
+	<option value="37">ANDHRA PRADESH (NEW)</option>
+	<option value="28">ANDHRA PRADESH(BEFORE DIVISION)</option>
+	<option value="12">ARUNACHAL PRADESH</option>
+	<option value="18">ASSAM</option>
+	<option value="10">BIHAR</option>
+	<option value="4">CHANDIGARH</option>
+	<option value="22">CHATTISGARH</option>
+	<option value="26">DADRA AND NAGAR HAVELI</option>
+	<option value="25">DAMAN AND DIU</option>
+	<option value="7">DELHI</option>
+	<option value="30">GOA</option>
+	<option value="24">GUJARAT</option>
+	<option value="6">HARYANA</option>
+	<option value="38">HIMACHAL PRADESH</option>
+	<option value="1">JAMMU AND KASHMIR</option>
+	<option value="20">JHARKHAND</option>
+	<option value="29">KARNATAKA</option>
+	<option value="32">KERALA</option>
+	<option value="39">LADAKH </option>
+	<option value="31">LAKSHWADEEP</option>
+	<option value="23">MADHYA PRADESH</option>
+	<option value="27">MAHARASHTRA</option>
+	<option value="14">MANIPUR</option>
+	<option value="17">MEGHLAYA</option>
+	<option value="15">MIZORAM</option>
+	<option value="13">NAGALAND</option>
+	<option value="21">ODISHA</option>
+	<option value="34">PUDUCHERRY</option>
+	<option value="3">PUNJAB</option>
+	<option value="8">RAJASTHAN</option>
+	<option value="11">SIKKIM</option>
+	<option value="33">TAMIL NADU</option>
+	<option value="36">TELANGANA</option>
+	<option value="16">TRIPURA</option>
+	<option value="9">UTTAR &#160;PRADESH</option>
+	<option value="5">UTTARAKHAND</option>
+	<option value="19">WEST BENGAL</option>
+
+</select>
+                                            <span id="rfvddlState" style="color:Red;display:none;"></span>
+                                            <input type="hidden" name="vcerfvddlState_ClientState" id="vcerfvddlState_ClientState" />
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label class="text-success">Available Seats</label>
+                                            <input name="txtAvailableSeat" type="text" value="0" readonly="readonly" id="txtAvailableSeat" class="form-control mb-1" />
+                                            <input type="hidden" name="hdfMinimumAge" id="hdfMinimumAge" value="0" />
+                                            <input type="hidden" name="hdfMaximumAge" id="hdfMaximumAge" value="0" />
+                                            <input type="hidden" name="hdfAgeCountDate" id="hdfAgeCountDate" value="2026-11-17" />
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label>Course fee<span style="color: red;">*</span> </label>
+                                            <input name="txtCourseFee" type="text" value="0" readonly="readonly" id="txtCourseFee" class="form-control mb-1" />
+                                            <span id="rfvtxtCourseFee" style="color:Red;display:none;"></span>
+                                            <input type="hidden" name="vcerfvtxtCourseFee_ClientState" id="vcerfvtxtCourseFee_ClientState" />
+                                            <input type="hidden" name="hdfAgeCriteria" id="hdfAgeCriteria" value="0" />
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Basic Details</legend>
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label>Name<span style="color: red;">*</span> </label>
+                                    <input name="txtName" type="text" maxlength="50" id="txtName" class="form-control mb-1" />
+                                    <span id="rfvtxtName" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtName_ClientState" id="vcerfvtxtName_ClientState" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Father's Name<span style="color: red;">*</span> </label>
+                                    <input name="txtFatherName" type="text" maxlength="50" id="txtFatherName" class="form-control mb-1" />
+                                    <span id="rfvtxtFatherName" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtFatherName_ClientState" id="vcerfvtxtFatherName_ClientState" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Nationality <span style="color: red;">*</span> </label>
+                                    <input name="txtNationality" type="text" maxlength="50" id="txtNationality" class="form-control mb-1" />
+                                    <span id="rfvtxtNationality" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtNationality_ClientState" id="vcerfvtxtNationality_ClientState" />
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label>Date of birth<span style="color: red;">*</span> </label>
+                                    <input name="txtDateOfBirth" type="text" maxlength="10" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;txtDateOfBirth\&#39;,\&#39;\&#39;)&#39;, 0)" onkeypress="if (WebForm_TextBoxKeyHandler(event) == false) return false;" id="txtDateOfBirth" class="form-control Mb-1" placeholder="Date Of Birth" />
+                                    
+                                    <span id="rfvtxtDateOfBirth" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtDateOfBirth_ClientState" id="vcerfvtxtDateOfBirth_ClientState" />
+                                    <span id="regvtxtDateOfBirth" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvtxtDateOfBirth_ClientState" id="vceregvtxtDateOfBirth_ClientState" />
+                                    <p>
+                                        <span id="lblDOBMsg" style="color:Red;font-size:10px;"></span>
+                                    </p>
+
+                                </div>
+
+
+                                <div class="form-group col-md-3 pl-md-0">
+                                    <label>Date of birth<span style="color: red;">*</span> </label>
+                                    <input type="file" name="FupBirthCertificate" id="FupBirthCertificate" class="form-control mb-1" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfFupBirthCertificate" id="hdfFupBirthCertificate" value="No" />
+                                    <span id="rfvFupBirthCertificate" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvFupBirthCertificate_ClientState" id="vcerfvFupBirthCertificate_ClientState" />
+                                    <span id="regvFupBirthCertificate" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupBirthCertificate_ClientState" id="vceregvFupBirthCertificate_ClientState" />
+                                    <p><span style="font-size: 10px;">(Attach Proof i.e. 10th Mark sheet, birth certificate)</span></p>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Domicile  </label>
+                                    <input name="txtDomicile" type="text" maxlength="50" id="txtDomicile" class="form-control mb-1" />
+
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Domicile (Attach Proof)  </label>
+                                    <input type="file" name="FupDomicileAttachProof" id="FupDomicileAttachProof" class="form-control" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfFupDomicileAttachProof" id="hdfFupDomicileAttachProof" value="No" />
+
+                                    <span id="regvFupDomicileAttachProof" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupDomicileAttachProof_ClientState" id="vceregvFupDomicileAttachProof_ClientState" />
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Permanent Address</legend>
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label>House No/Apartment<span style="color: red;">*</span> </label>
+                                    <input name="txtHouseNoApartment" type="text" maxlength="50" id="txtHouseNoApartment" class="form-control mb-1" />
+                                    <span id="rfvtxtHouseNoApartment" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtHouseNoApartment_ClientState" id="vcerfvtxtHouseNoApartment_ClientState" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Street/Village/Colony<span style="color: red;">*</span> </label>
+                                    <input name="txtStreetVillageColony" type="text" maxlength="250" id="txtStreetVillageColony" class="form-control mb-1" />
+                                    <span id="rfvtxtStreetVillageColony" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtStreetVillageColony_ClientState" id="vcerfvtxtStreetVillageColony_ClientState" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>District/City<span style="color: red;">*</span> </label>
+                                    <input name="txtDistrictCity" type="text" maxlength="50" id="txtDistrictCity" class="form-control mb-1" />
+                                    <span id="rfvtxtDistrictCity" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtDistrictCity_ClientState" id="vcerfvtxtDistrictCity_ClientState" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>PIN code<span style="color: red;">*</span> </label>
+                                    <input name="txtPincode" type="text" maxlength="6" id="txtPincode" class="form-control mb-1" />
+                                    
+                                    <span id="rfvtxtPincode" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtPincode_ClientState" id="vcerfvtxtPincode_ClientState" />
+                                </div>
+
+                                <div class="form-group col-md-3">
+                                    <label>Mobile No.<span style="color: red;">*</span> </label>
+                                    <input name="txtMobileNo" type="text" value="123456789" maxlength="10" id="txtMobileNo" class="form-control mb-1" placeholder="" />
+                                    
+                                    <span id="rfvtxtMobileNo" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtMobileNo_ClientState" id="vcerfvtxtMobileNo_ClientState" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Email Id<span style="color: red;">*</span> </label>
+                                    <input name="txtEmailId" type="text" id="txtEmailId" class="form-control" placeholder="Email Id" />
+                                    <span id="rfvtxtEmailId" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtEmailId_ClientState" id="vcerfvtxtEmailId_ClientState" />
+                                    <span id="revemailid" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerevemailid_ClientState" id="vcerevemailid_ClientState" />
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Academic Details</legend>
+                            <div class="row">
+                                <div class="form-group col-md-3">
+                                    <label><small>Education qualification <span style="color: red;">*</span>  </small></label>
+                                    <select name="ddlEduationQualification" id="ddlEduationQualification" class="form-control">
+	<option selected="selected" value="0">Select</option>
+	<option value="High School">High School</option>
+	<option value="Intermediate">Intermediate</option>
+	<option value="Graduation">Graduation</option>
+	<option value="Post graduation">Post graduation</option>
+
+</select>
+                                    <span id="rfvddlEduationQualification" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvddlEduationQualification_ClientState" id="vcerfvddlEduationQualification_ClientState" />
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label><small>Education qualification<span style="color: red;">*</span> </small></label>
+                                    <input type="file" name="FupEducationQualification" id="FupEducationQualification" class="form-control" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfEducationQualification" id="hdfEducationQualification" value="No" />
+                                    <span id="rfvFupEducationQualification" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvFupEducationQualification_ClientState" id="vcerfvFupEducationQualification_ClientState" />
+                                    <span id="regvFupEducationQualification" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupEducationQualification_ClientState" id="vceregvFupEducationQualification_ClientState" />
+                                    <span>(Attach proof)</span>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label><small style="white-space: nowrap">Attach Basic/Intermeduate Skiing Certificate (Grade-A)</small></label>
+                                    <input type="file" name="FupAnyAdventureCoursePhoto" id="FupAnyAdventureCoursePhoto" class="form-control mb-1" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfAnyAdventureCoursePhoto" id="hdfAnyAdventureCoursePhoto" value="No" />
+
+                                    <span id="regvFupAnyAdventureCoursePhoto" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupAnyAdventureCoursePhoto_ClientState" id="vceregvFupAnyAdventureCoursePhoto_ClientState" />
+                                    <span>(Attach proof)</span>
+                                </div>
+                                <div class="form-group col-md-3" style="display: none;">
+                                    <label><small>Current employment  </small></label>
+                                    <input type="file" name="FupCurrentEmployment" id="FupCurrentEmployment" class="form-control mb-1" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfCurrentEmployment" id="hdfCurrentEmployment" value="No" />
+
+                                    <span id="regvFupCurrentEmployment" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupCurrentEmployment_ClientState" id="vceregvFupCurrentEmployment_ClientState" />
+                                    <span>(Attach proof)</span>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Indentification Details</legend>
+                            <div class="row">
+                                <div class="form-group col-md-4">
+                                    <label>Vegetarian / Non-Vegetarian <span style="color: red;">*</span></label>
+                                    <select name="ddlVegetarianOrNon" id="ddlVegetarianOrNon" class="form-control mb-1">
+	<option selected="selected" value="0">Select</option>
+	<option value="Vegetarian">Vegetarian</option>
+	<option value="Non-Vegetarian">Non-Vegetarian</option>
+
+</select>
+                                    <span id="RequiredFieldValidator1" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="ValidatorCalloutExtender1_ClientState" id="ValidatorCalloutExtender1_ClientState" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Blood Group<span style="color: red;">*</span></label>
+                                    <input name="txtBloodGroup" type="text" maxlength="50" id="txtBloodGroup" class="form-control mb-1" />
+                                    <span id="rfvtxtBloodGroup" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtBloodGroup_ClientState" id="vcerfvtxtBloodGroup_ClientState" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label>Medical Category</label>
+                                    <input name="txtMedicalCategory" type="text" maxlength="50" id="txtMedicalCategory" class="form-control mb-1" />
+
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Height</label>
+                                    <input name="txtHeight" type="text" maxlength="50" id="txtHeight" class="form-control mb-1" />
+
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Weight</label>
+                                    <input name="txtWeight" type="text" maxlength="50" id="txtWeight" class="form-control mb-1" />
+
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Waist</label>
+                                    <input name="txtWaist" type="text" maxlength="50" id="txtWaist" class="form-control mb-1" />
+
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label>Shoe Size</label>
+                                    <input name="txtShoeSize" type="text" maxlength="50" id="txtShoeSize" class="form-control mb-1" />
+
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Photo/Signature<span style="color: red;">*</span></legend>
+                            <div class="row">
+                                <div class="form-group col-md-6 Signature">
+                                    <label>Photo of Applicant  </label>
+                                    <input type="file" name="FupPhototOfApplicant" id="FupPhototOfApplicant" class="form-control" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfPhototOfApplicant" id="hdfPhototOfApplicant" value="No" />
+                                    <span id="rfvFupPhototOfApplicant" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvFupPhototOfApplicant_ClientState" id="vcerfvFupPhototOfApplicant_ClientState" />
+                                    <span id="regvFupPhototOfApplicant" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupPhototOfApplicant_ClientState" id="vceregvFupPhototOfApplicant_ClientState" />
+                                </div>
+                                <div class="form-group col-md-6 Signature">
+                                    <label>Signature of Applicant  </label>
+                                    <input type="file" name="FupSignatureOfAppicant" id="FupSignatureOfAppicant" class="form-control" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfFupSignatureOfAppicant" id="hdfFupSignatureOfAppicant" value="No" />
+                                    <span id="rfvFupSignatureOfAppicant" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvFupSignatureOfAppicant_ClientState" id="vcerfvFupSignatureOfAppicant_ClientState" />
+                                    <span id="regvFupSignatureOfAppicant" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupSignatureOfAppicant_ClientState" id="vceregvFupSignatureOfAppicant_ClientState" />
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <p><small style="font-size: 12px;">Upload Signature (pictures should be in .jpeg, .jpg or .png format only, and file size should not exceed 500 KB)</small></p>
+                                </div>
+                            </div>
+
+                        </fieldset>
+                        <fieldset>
+                            <legend>INDEMNITY BOND</legend>
+                            <div class="row">
+
+                                <div class="form-group col-md-12">
+                                    <p>
+                                        <small style="font-size: 12px;">I, the undersigned, understand and acknowledge the risks involved in the adventure activities offered by The Indian Institute of Skiing and Mountaineering, Gulmarg, I voluntarily agree to participate in these activities and hereby assume all risks associated with them.
+                                                                       <br />
+                                            I acknowledge that the government institute and its employees will not be held liable for any injuries, accidents, or damages that may occur during the course of the adventure activities.
+                                        </small>
+                                    </p>
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <label>Emergency Contact Name<span style="color: red;">*</span> </label>
+                                    <input name="txtEmergencyContactName" type="text" maxlength="50" id="txtEmergencyContactName" class="form-control mb-1" />
+                                    <span id="rfvtxtEmergencyContactName" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtEmergencyContactName_ClientState" id="vcerfvtxtEmergencyContactName_ClientState" />
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label>Emergency Contact Phone<span style="color: red;">*</span> </label>
+                                    <input name="txtEmergencyContactPhone" type="text" maxlength="10" id="txtEmergencyContactPhone" class="form-control mb-1" placeholder="" />
+                                    
+                                    <span id="rfvtxtEmergencyContactPhone" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvtxtEmergencyContactPhone_ClientState" id="vcerfvtxtEmergencyContactPhone_ClientState" />
+                                </div>
+                                <div class="form-group col-md-12 Signature">
+
+                                    <p>
+                                        <b>PARENT/GUARDIAN (IF PARTICIPANT IS UNDER 18 YEARS OLD):</b><br />
+                                        <small style="font-size: 12px;">I, the parent/guardian of the participant named above, consent to their participation in the adventure activities and acknowledge the terms of this indemnity form.</small>
+
+                                    </p>
+
+                                    <label>Parent/Guardian's Signature  </label>
+                                    <input type="file" name="FupParentGuardianSignature" id="FupParentGuardianSignature" class="form-control" onchange="checkFileSize(this)" />
+                                    <input type="hidden" name="hdfParentGuardianSignature" id="hdfParentGuardianSignature" value="No" />
+                                    <span id="rfvFupParentGuardianSignature" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vcerfvFupParentGuardianSignature_ClientState" id="vcerfvFupParentGuardianSignature_ClientState" />
+                                    <span id="regvFupParentGuardianSignature" style="color:Red;display:none;"></span>
+                                    <input type="hidden" name="vceregvFupParentGuardianSignature_ClientState" id="vceregvFupParentGuardianSignature_ClientState" />
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <p><small style="font-size: 12px;">Upload Signature (pictures should be in .jpeg, .jpg or .png format only, and file size should not exceed 500 KB)</small></p>
+                                </div>
+
+                            </div>
+
+                        </fieldset>
+                        <div class="col-md-12 text-center">
+                            
+                        </div>
+
+                        <fieldset>
+                            <legend>Declaration</legend>
+                            <div class="row">
+                                <div class="col-md-12 form-group d-flex chechbox_space">
+                                    <span><input id="chkIAgree" type="checkbox" name="chkIAgree" /><label for="chkIAgree">I agree to strictly abide /adhere to the discipline and the directions of the Institute, no liquor/smoking will be consumed/ inhaled by me inside or outside the institute during the course failing which I shall be liable for expulsion. during the course.</label></span>
+                                </div>
+                                <div class="col-md-12 form-group">
+                                    <span id="lblCheckError"></span>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <div class="col-md-12 text-center">
+
+                            <input type="submit" name="btnSubmit" value="Submit" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;btnSubmit&quot;, &quot;&quot;, true, &quot;sv&quot;, &quot;&quot;, false, false))" id="btnSubmit" class="btn btn_com px-4" />
+
+                            <input type="submit" name="btnReset" value="Reset" id="btnReset" class="btn btn_com px-4" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8" data-aos="fade-left" data-aos-duration="900">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="footer_div">
+                                    <h5>Office Contact</h5>
+                                    <p>Office Hours - 09 AM to 05 PM</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="footer_div">
+                                    <h5>Gulmarg Address</h5>
+                                    <p>IISM, Near Golf Club, Gulmarg (J & K) Pin: 193403</p>
+                                    <p>
+                                        9797080213,  9419076335, 9541577664,
+                                        <br>
+                                        01954-294075, 01954-294076<br>
+                                        skitigers@gmail.com
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="footer_div">
+                                    <h5>Srinagar Address</h5>
+                                    <p>House No 183, Kursoo, Raj Bagh, Srinagar, J & K Pin: 190008</p>
+                                    <p>
+                                        0194-2312749<br>
+                                        iismsgr@gmail.com
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-right" data-aos-duration="800">
+                        <div class="footer_div">
+                            <div class="mb-3">
+                                <h5>Important Links</h5>
+                                <ul class="nav flex-column">
+                                    <li><a href="https://tourism.gov.in/" target="_blank">www.tourism.gov.in</a></li>
+                                </ul>
+                            </div>
+                            <p>For advice or further info on any of our courses, careers or anything else visit our social platforms:</p>
+                            <h5>Follow Us:</h5>
+                            <ul class="nav top-social mb-3">
+                                <li><a href="https://www.facebook.com/people/IISM-Gulmarg/61550027926323/" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
+                                <li><a href="https://twitter.com/iism__official" target="_blank">
+                                    <img src="images/twiiter-new.png" width="28px" alt="">
+                                </a></li>
+                                <li><a href="https://www.instagram.com/iism_.gulmarg/" target="_blank"><i class="fab fa-instagram"></i></a></li>
+                                <li><a href="https://www.youtube.com/channel/UC_4D5fmc1vvYc9cPpN55I-A" target="_blank"><i class="fab fa-youtube"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container footer_bottom">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="mb-0">
+                            Site by : 
+                        <a href="#" class="text-capitalize" target="_blank">markstein technology solutions pvt. ltd</a>
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-0 text-center">
+                            Last update : 06/06/2026
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="nav justify-content-md-end">
+                            <li><a href="#">Disclaimer & Privacy Policy</a></li>
+                            <li><a href="#">Terms & Conditions</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+
+
+        <script src="js/jquery-3.3.1.slim.min.js"></script>
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script src="js/2.1.1jquery.min.js"></script>
+        <script src="js/aos.js"></script>
+        <script>
+            AOS.init();
+        </script>
+        <script src="js/custom.min.js"></script>
+        <script type="text/javascript" src="js/side-nav.js"></script>
+        <script type="text/javascript">
+
+            $(window).load(function () {
+                $(".loader1").delay(900).fadeOut('slow');
+            })
+        </script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                let getCurrentUrl = window.location.hash
+                if (getCurrentUrl != '') {
+                    $('html, body').animate({
+                        scrollTop: $(getCurrentUrl).offset().top - 120
+                    }, 800);
+                };
+            });
+        </script>
+
+
+    
+<script type="text/javascript">
+//<![CDATA[
+var Page_Validators =  new Array(document.getElementById("rfvddlCourse"), document.getElementById("rfvddlCourseLevel"), document.getElementById("rfvddlScheduleCourse"), document.getElementById("rfvddlState"), document.getElementById("rfvtxtCourseFee"), document.getElementById("rfvtxtName"), document.getElementById("rfvtxtFatherName"), document.getElementById("rfvtxtNationality"), document.getElementById("rfvtxtDateOfBirth"), document.getElementById("regvtxtDateOfBirth"), document.getElementById("rfvFupBirthCertificate"), document.getElementById("regvFupBirthCertificate"), document.getElementById("regvFupDomicileAttachProof"), document.getElementById("rfvtxtHouseNoApartment"), document.getElementById("rfvtxtStreetVillageColony"), document.getElementById("rfvtxtDistrictCity"), document.getElementById("rfvtxtPincode"), document.getElementById("rfvtxtMobileNo"), document.getElementById("rfvtxtEmailId"), document.getElementById("revemailid"), document.getElementById("rfvddlEduationQualification"), document.getElementById("rfvFupEducationQualification"), document.getElementById("regvFupEducationQualification"), document.getElementById("regvFupAnyAdventureCoursePhoto"), document.getElementById("regvFupCurrentEmployment"), document.getElementById("RequiredFieldValidator1"), document.getElementById("rfvtxtBloodGroup"), document.getElementById("rfvFupPhototOfApplicant"), document.getElementById("regvFupPhototOfApplicant"), document.getElementById("rfvFupSignatureOfAppicant"), document.getElementById("regvFupSignatureOfAppicant"), document.getElementById("rfvtxtEmergencyContactName"), document.getElementById("rfvtxtEmergencyContactPhone"), document.getElementById("rfvFupParentGuardianSignature"), document.getElementById("regvFupParentGuardianSignature"));
+//]]>
+</script>
+
+<script type="text/javascript">
+//<![CDATA[
+var rfvddlCourse = document.all ? document.all["rfvddlCourse"] : document.getElementById("rfvddlCourse");
+rfvddlCourse.controltovalidate = "ddlCourse";
+rfvddlCourse.focusOnError = "t";
+rfvddlCourse.errormessage = "Please Select Course.";
+rfvddlCourse.display = "None";
+rfvddlCourse.validationGroup = "sv";
+rfvddlCourse.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvddlCourse.initialvalue = "0";
+var rfvddlCourseLevel = document.all ? document.all["rfvddlCourseLevel"] : document.getElementById("rfvddlCourseLevel");
+rfvddlCourseLevel.controltovalidate = "ddlCourseLevel";
+rfvddlCourseLevel.focusOnError = "t";
+rfvddlCourseLevel.errormessage = "Please Select Course Level.";
+rfvddlCourseLevel.display = "None";
+rfvddlCourseLevel.validationGroup = "sv";
+rfvddlCourseLevel.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvddlCourseLevel.initialvalue = "0";
+var rfvddlScheduleCourse = document.all ? document.all["rfvddlScheduleCourse"] : document.getElementById("rfvddlScheduleCourse");
+rfvddlScheduleCourse.controltovalidate = "ddlScheduleCourse";
+rfvddlScheduleCourse.focusOnError = "t";
+rfvddlScheduleCourse.errormessage = "Please Select Schedule Course.";
+rfvddlScheduleCourse.display = "None";
+rfvddlScheduleCourse.validationGroup = "sv";
+rfvddlScheduleCourse.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvddlScheduleCourse.initialvalue = "0";
+var rfvddlState = document.all ? document.all["rfvddlState"] : document.getElementById("rfvddlState");
+rfvddlState.controltovalidate = "ddlState";
+rfvddlState.focusOnError = "t";
+rfvddlState.errormessage = "Please Select State.";
+rfvddlState.display = "None";
+rfvddlState.validationGroup = "sv";
+rfvddlState.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvddlState.initialvalue = "0";
+var rfvtxtCourseFee = document.all ? document.all["rfvtxtCourseFee"] : document.getElementById("rfvtxtCourseFee");
+rfvtxtCourseFee.controltovalidate = "txtCourseFee";
+rfvtxtCourseFee.focusOnError = "t";
+rfvtxtCourseFee.errormessage = "Please Enter Course Fee.";
+rfvtxtCourseFee.display = "None";
+rfvtxtCourseFee.validationGroup = "sv";
+rfvtxtCourseFee.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtCourseFee.initialvalue = "";
+var rfvtxtName = document.all ? document.all["rfvtxtName"] : document.getElementById("rfvtxtName");
+rfvtxtName.controltovalidate = "txtName";
+rfvtxtName.focusOnError = "t";
+rfvtxtName.errormessage = "Please Enter Name.";
+rfvtxtName.display = "None";
+rfvtxtName.validationGroup = "sv";
+rfvtxtName.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtName.initialvalue = "";
+var rfvtxtFatherName = document.all ? document.all["rfvtxtFatherName"] : document.getElementById("rfvtxtFatherName");
+rfvtxtFatherName.controltovalidate = "txtFatherName";
+rfvtxtFatherName.focusOnError = "t";
+rfvtxtFatherName.errormessage = "Please Enter Father\'s Name.";
+rfvtxtFatherName.display = "None";
+rfvtxtFatherName.validationGroup = "sv";
+rfvtxtFatherName.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtFatherName.initialvalue = "";
+var rfvtxtNationality = document.all ? document.all["rfvtxtNationality"] : document.getElementById("rfvtxtNationality");
+rfvtxtNationality.controltovalidate = "txtNationality";
+rfvtxtNationality.focusOnError = "t";
+rfvtxtNationality.errormessage = "Please Enter Nationality.";
+rfvtxtNationality.display = "None";
+rfvtxtNationality.validationGroup = "sv";
+rfvtxtNationality.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtNationality.initialvalue = "";
+var rfvtxtDateOfBirth = document.all ? document.all["rfvtxtDateOfBirth"] : document.getElementById("rfvtxtDateOfBirth");
+rfvtxtDateOfBirth.controltovalidate = "txtDateOfBirth";
+rfvtxtDateOfBirth.focusOnError = "t";
+rfvtxtDateOfBirth.errormessage = "Please Enter DateOfBirth.";
+rfvtxtDateOfBirth.display = "None";
+rfvtxtDateOfBirth.validationGroup = "sv";
+rfvtxtDateOfBirth.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtDateOfBirth.initialvalue = "";
+var regvtxtDateOfBirth = document.all ? document.all["regvtxtDateOfBirth"] : document.getElementById("regvtxtDateOfBirth");
+regvtxtDateOfBirth.controltovalidate = "txtDateOfBirth";
+regvtxtDateOfBirth.focusOnError = "t";
+regvtxtDateOfBirth.errormessage = "Invalid date only this format dd/MM/yyyy are allow.";
+regvtxtDateOfBirth.display = "None";
+regvtxtDateOfBirth.validationGroup = "sv";
+regvtxtDateOfBirth.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvtxtDateOfBirth.validationexpression = "(((0|1)[0-9]|2[0-9]|3[0-1])\\/(0[1-9]|1[0-2])\\/((19|20)\\d\\d))$";
+var rfvFupBirthCertificate = document.all ? document.all["rfvFupBirthCertificate"] : document.getElementById("rfvFupBirthCertificate");
+rfvFupBirthCertificate.controltovalidate = "FupBirthCertificate";
+rfvFupBirthCertificate.focusOnError = "t";
+rfvFupBirthCertificate.errormessage = "Please Upload Date of birth.";
+rfvFupBirthCertificate.display = "None";
+rfvFupBirthCertificate.validationGroup = "sv";
+rfvFupBirthCertificate.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvFupBirthCertificate.initialvalue = "";
+var regvFupBirthCertificate = document.all ? document.all["regvFupBirthCertificate"] : document.getElementById("regvFupBirthCertificate");
+regvFupBirthCertificate.controltovalidate = "FupBirthCertificate";
+regvFupBirthCertificate.focusOnError = "t";
+regvFupBirthCertificate.errormessage = "Only .pdf, .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupBirthCertificate.display = "None";
+regvFupBirthCertificate.validationGroup = "prosv";
+regvFupBirthCertificate.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupBirthCertificate.validationexpression = "(.*\\.([Pp][Df][Ff])|.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+var regvFupDomicileAttachProof = document.all ? document.all["regvFupDomicileAttachProof"] : document.getElementById("regvFupDomicileAttachProof");
+regvFupDomicileAttachProof.controltovalidate = "FupDomicileAttachProof";
+regvFupDomicileAttachProof.focusOnError = "t";
+regvFupDomicileAttachProof.errormessage = "Only .pdf, .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupDomicileAttachProof.display = "None";
+regvFupDomicileAttachProof.validationGroup = "sv";
+regvFupDomicileAttachProof.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupDomicileAttachProof.validationexpression = "(.*\\.([Pp][Dd][Ff])|.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+var rfvtxtHouseNoApartment = document.all ? document.all["rfvtxtHouseNoApartment"] : document.getElementById("rfvtxtHouseNoApartment");
+rfvtxtHouseNoApartment.controltovalidate = "txtHouseNoApartment";
+rfvtxtHouseNoApartment.focusOnError = "t";
+rfvtxtHouseNoApartment.errormessage = "Please Enter House No. / Apartment.";
+rfvtxtHouseNoApartment.display = "None";
+rfvtxtHouseNoApartment.validationGroup = "sv";
+rfvtxtHouseNoApartment.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtHouseNoApartment.initialvalue = "";
+var rfvtxtStreetVillageColony = document.all ? document.all["rfvtxtStreetVillageColony"] : document.getElementById("rfvtxtStreetVillageColony");
+rfvtxtStreetVillageColony.controltovalidate = "txtStreetVillageColony";
+rfvtxtStreetVillageColony.focusOnError = "t";
+rfvtxtStreetVillageColony.errormessage = "Please Enter Street/Village/Colony.";
+rfvtxtStreetVillageColony.display = "None";
+rfvtxtStreetVillageColony.validationGroup = "sv";
+rfvtxtStreetVillageColony.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtStreetVillageColony.initialvalue = "";
+var rfvtxtDistrictCity = document.all ? document.all["rfvtxtDistrictCity"] : document.getElementById("rfvtxtDistrictCity");
+rfvtxtDistrictCity.controltovalidate = "txtDistrictCity";
+rfvtxtDistrictCity.focusOnError = "t";
+rfvtxtDistrictCity.errormessage = "Please Enter District/City.";
+rfvtxtDistrictCity.display = "None";
+rfvtxtDistrictCity.validationGroup = "sv";
+rfvtxtDistrictCity.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtDistrictCity.initialvalue = "";
+var rfvtxtPincode = document.all ? document.all["rfvtxtPincode"] : document.getElementById("rfvtxtPincode");
+rfvtxtPincode.controltovalidate = "txtPincode";
+rfvtxtPincode.focusOnError = "t";
+rfvtxtPincode.errormessage = "Please Enter Pincode.";
+rfvtxtPincode.display = "None";
+rfvtxtPincode.validationGroup = "sv";
+rfvtxtPincode.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtPincode.initialvalue = "";
+var rfvtxtMobileNo = document.all ? document.all["rfvtxtMobileNo"] : document.getElementById("rfvtxtMobileNo");
+rfvtxtMobileNo.controltovalidate = "txtMobileNo";
+rfvtxtMobileNo.focusOnError = "t";
+rfvtxtMobileNo.errormessage = "Please Enter Mobile No.";
+rfvtxtMobileNo.display = "None";
+rfvtxtMobileNo.validationGroup = "sv";
+rfvtxtMobileNo.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtMobileNo.initialvalue = "";
+var rfvtxtEmailId = document.all ? document.all["rfvtxtEmailId"] : document.getElementById("rfvtxtEmailId");
+rfvtxtEmailId.controltovalidate = "txtEmailId";
+rfvtxtEmailId.focusOnError = "t";
+rfvtxtEmailId.errormessage = "Please Enter EmailId.";
+rfvtxtEmailId.display = "None";
+rfvtxtEmailId.validationGroup = "sv";
+rfvtxtEmailId.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtEmailId.initialvalue = "";
+var revemailid = document.all ? document.all["revemailid"] : document.getElementById("revemailid");
+revemailid.controltovalidate = "txtEmailId";
+revemailid.focusOnError = "t";
+revemailid.errormessage = "Please Enter Valid Email ID";
+revemailid.display = "None";
+revemailid.validationGroup = "sv";
+revemailid.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+revemailid.validationexpression = "\\w+([-+.\']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
+var rfvddlEduationQualification = document.all ? document.all["rfvddlEduationQualification"] : document.getElementById("rfvddlEduationQualification");
+rfvddlEduationQualification.controltovalidate = "ddlEduationQualification";
+rfvddlEduationQualification.focusOnError = "t";
+rfvddlEduationQualification.errormessage = "Please Select Eduation Qualification.";
+rfvddlEduationQualification.display = "None";
+rfvddlEduationQualification.validationGroup = "sv";
+rfvddlEduationQualification.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvddlEduationQualification.initialvalue = "0";
+var rfvFupEducationQualification = document.all ? document.all["rfvFupEducationQualification"] : document.getElementById("rfvFupEducationQualification");
+rfvFupEducationQualification.controltovalidate = "FupEducationQualification";
+rfvFupEducationQualification.focusOnError = "t";
+rfvFupEducationQualification.errormessage = "Please Upload Bank Passbook Photo.";
+rfvFupEducationQualification.display = "None";
+rfvFupEducationQualification.validationGroup = "sv";
+rfvFupEducationQualification.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvFupEducationQualification.initialvalue = "";
+var regvFupEducationQualification = document.all ? document.all["regvFupEducationQualification"] : document.getElementById("regvFupEducationQualification");
+regvFupEducationQualification.controltovalidate = "FupEducationQualification";
+regvFupEducationQualification.focusOnError = "t";
+regvFupEducationQualification.errormessage = "Only .pdf, .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupEducationQualification.display = "None";
+regvFupEducationQualification.validationGroup = "sv";
+regvFupEducationQualification.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupEducationQualification.validationexpression = "(.*\\.([Pp][Dd][Ff])|.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+var regvFupAnyAdventureCoursePhoto = document.all ? document.all["regvFupAnyAdventureCoursePhoto"] : document.getElementById("regvFupAnyAdventureCoursePhoto");
+regvFupAnyAdventureCoursePhoto.controltovalidate = "FupAnyAdventureCoursePhoto";
+regvFupAnyAdventureCoursePhoto.focusOnError = "t";
+regvFupAnyAdventureCoursePhoto.errormessage = "Only .pdf, .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupAnyAdventureCoursePhoto.display = "None";
+regvFupAnyAdventureCoursePhoto.validationGroup = "sv";
+regvFupAnyAdventureCoursePhoto.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupAnyAdventureCoursePhoto.validationexpression = "(.*\\.([Pp][Dd][Ff])|.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+var regvFupCurrentEmployment = document.all ? document.all["regvFupCurrentEmployment"] : document.getElementById("regvFupCurrentEmployment");
+regvFupCurrentEmployment.controltovalidate = "FupCurrentEmployment";
+regvFupCurrentEmployment.focusOnError = "t";
+regvFupCurrentEmployment.errormessage = "Only .pdf, .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupCurrentEmployment.display = "None";
+regvFupCurrentEmployment.validationGroup = "sv";
+regvFupCurrentEmployment.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupCurrentEmployment.validationexpression = "(.*\\.([Pp][Dd][Ff])|.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+var RequiredFieldValidator1 = document.all ? document.all["RequiredFieldValidator1"] : document.getElementById("RequiredFieldValidator1");
+RequiredFieldValidator1.controltovalidate = "ddlEduationQualification";
+RequiredFieldValidator1.focusOnError = "t";
+RequiredFieldValidator1.errormessage = "Please Select Vegetarian / Non-Vegetarian .";
+RequiredFieldValidator1.display = "None";
+RequiredFieldValidator1.validationGroup = "sv";
+RequiredFieldValidator1.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+RequiredFieldValidator1.initialvalue = "0";
+var rfvtxtBloodGroup = document.all ? document.all["rfvtxtBloodGroup"] : document.getElementById("rfvtxtBloodGroup");
+rfvtxtBloodGroup.controltovalidate = "txtBloodGroup";
+rfvtxtBloodGroup.focusOnError = "t";
+rfvtxtBloodGroup.errormessage = "Please Enter Blood Group.";
+rfvtxtBloodGroup.display = "None";
+rfvtxtBloodGroup.validationGroup = "sv";
+rfvtxtBloodGroup.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtBloodGroup.initialvalue = "";
+var rfvFupPhototOfApplicant = document.all ? document.all["rfvFupPhototOfApplicant"] : document.getElementById("rfvFupPhototOfApplicant");
+rfvFupPhototOfApplicant.controltovalidate = "FupPhototOfApplicant";
+rfvFupPhototOfApplicant.focusOnError = "t";
+rfvFupPhototOfApplicant.errormessage = "Please Upload Photo of Applicant.";
+rfvFupPhototOfApplicant.display = "None";
+rfvFupPhototOfApplicant.validationGroup = "sv";
+rfvFupPhototOfApplicant.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvFupPhototOfApplicant.initialvalue = "";
+var regvFupPhototOfApplicant = document.all ? document.all["regvFupPhototOfApplicant"] : document.getElementById("regvFupPhototOfApplicant");
+regvFupPhototOfApplicant.controltovalidate = "FupPhototOfApplicant";
+regvFupPhototOfApplicant.focusOnError = "t";
+regvFupPhototOfApplicant.errormessage = "Only .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupPhototOfApplicant.display = "None";
+regvFupPhototOfApplicant.validationGroup = "sv";
+regvFupPhototOfApplicant.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupPhototOfApplicant.validationexpression = "(.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+var rfvFupSignatureOfAppicant = document.all ? document.all["rfvFupSignatureOfAppicant"] : document.getElementById("rfvFupSignatureOfAppicant");
+rfvFupSignatureOfAppicant.controltovalidate = "FupSignatureOfAppicant";
+rfvFupSignatureOfAppicant.focusOnError = "t";
+rfvFupSignatureOfAppicant.errormessage = "Please Upload Signature of Applicant.";
+rfvFupSignatureOfAppicant.display = "None";
+rfvFupSignatureOfAppicant.validationGroup = "sv";
+rfvFupSignatureOfAppicant.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvFupSignatureOfAppicant.initialvalue = "";
+var regvFupSignatureOfAppicant = document.all ? document.all["regvFupSignatureOfAppicant"] : document.getElementById("regvFupSignatureOfAppicant");
+regvFupSignatureOfAppicant.controltovalidate = "FupSignatureOfAppicant";
+regvFupSignatureOfAppicant.focusOnError = "t";
+regvFupSignatureOfAppicant.errormessage = "Only .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupSignatureOfAppicant.display = "None";
+regvFupSignatureOfAppicant.validationGroup = "sv";
+regvFupSignatureOfAppicant.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupSignatureOfAppicant.validationexpression = "(.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+var rfvtxtEmergencyContactName = document.all ? document.all["rfvtxtEmergencyContactName"] : document.getElementById("rfvtxtEmergencyContactName");
+rfvtxtEmergencyContactName.controltovalidate = "txtEmergencyContactName";
+rfvtxtEmergencyContactName.focusOnError = "t";
+rfvtxtEmergencyContactName.errormessage = "Please Enter Emergency Contact Name.";
+rfvtxtEmergencyContactName.display = "None";
+rfvtxtEmergencyContactName.validationGroup = "sv";
+rfvtxtEmergencyContactName.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtEmergencyContactName.initialvalue = "";
+var rfvtxtEmergencyContactPhone = document.all ? document.all["rfvtxtEmergencyContactPhone"] : document.getElementById("rfvtxtEmergencyContactPhone");
+rfvtxtEmergencyContactPhone.controltovalidate = "txtEmergencyContactPhone";
+rfvtxtEmergencyContactPhone.focusOnError = "t";
+rfvtxtEmergencyContactPhone.errormessage = "Please Enter Emergency Contact Phone.";
+rfvtxtEmergencyContactPhone.display = "None";
+rfvtxtEmergencyContactPhone.validationGroup = "sv";
+rfvtxtEmergencyContactPhone.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvtxtEmergencyContactPhone.initialvalue = "";
+var rfvFupParentGuardianSignature = document.all ? document.all["rfvFupParentGuardianSignature"] : document.getElementById("rfvFupParentGuardianSignature");
+rfvFupParentGuardianSignature.controltovalidate = "FupParentGuardianSignature";
+rfvFupParentGuardianSignature.focusOnError = "t";
+rfvFupParentGuardianSignature.errormessage = "Please Upload Parent/Guardian\'s Signature.";
+rfvFupParentGuardianSignature.display = "None";
+rfvFupParentGuardianSignature.validationGroup = "sv";
+rfvFupParentGuardianSignature.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+rfvFupParentGuardianSignature.initialvalue = "";
+var regvFupParentGuardianSignature = document.all ? document.all["regvFupParentGuardianSignature"] : document.getElementById("regvFupParentGuardianSignature");
+regvFupParentGuardianSignature.controltovalidate = "FupParentGuardianSignature";
+regvFupParentGuardianSignature.focusOnError = "t";
+regvFupParentGuardianSignature.errormessage = "Only .gif, .jpg, .png, .jpeg, files & Size 1MB are allowed.";
+regvFupParentGuardianSignature.display = "None";
+regvFupParentGuardianSignature.validationGroup = "sv";
+regvFupParentGuardianSignature.evaluationfunction = "RegularExpressionValidatorEvaluateIsValid";
+regvFupParentGuardianSignature.validationexpression = "(.*\\.([Gg][Ii][Ff])|.*\\.([Jj][Pp][Gg])|.*\\.([pP][nN][gG])|.*\\.([Jj][Pp][Ee][Gg])$)";
+//]]>
+</script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+var Page_ValidationActive = false;
+if (typeof(ValidatorOnLoad) == "function") {
+    ValidatorOnLoad();
+}
+
+function ValidatorOnSubmit() {
+    if (Page_ValidationActive) {
+        return ValidatorCommonOnSubmit();
+    }
+    else {
+        return true;
+    }
+}
+        
+document.getElementById('rfvddlCourse').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvddlCourse'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvddlCourse_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvddlCourse","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvddlCourse"));
+});
+
+document.getElementById('rfvddlCourseLevel').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvddlCourseLevel'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvddlCourseLevel_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvddlCourseLevel","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvddlCourseLevel"));
+});
+
+document.getElementById('rfvddlScheduleCourse').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvddlScheduleCourse'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvddlScheduleCourse_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvddlScheduleCourse","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvddlScheduleCourse"));
+});
+
+document.getElementById('rfvddlState').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvddlState'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvddlState_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvddlState","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvddlState"));
+});
+
+document.getElementById('rfvtxtCourseFee').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtCourseFee'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtCourseFee_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtCourseFee","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtCourseFee"));
+});
+
+document.getElementById('rfvtxtName').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtName'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtName_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtName","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtName"));
+});
+
+document.getElementById('rfvtxtFatherName').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtFatherName'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtFatherName_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtFatherName","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtFatherName"));
+});
+
+document.getElementById('rfvtxtNationality').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtNationality'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtNationality_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtNationality","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtNationality"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.CalendarBehavior, {"format":"dd/MM/yyyy","id":"CalendarExtendertxtDateOfBirth"}, null, null, $get("txtDateOfBirth"));
+});
+
+document.getElementById('rfvtxtDateOfBirth').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtDateOfBirth'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtDateOfBirth_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtDateOfBirth","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtDateOfBirth"));
+});
+
+document.getElementById('regvtxtDateOfBirth').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvtxtDateOfBirth'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvtxtDateOfBirth_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvtxtDateOfBirth","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvtxtDateOfBirth"));
+});
+
+document.getElementById('rfvFupBirthCertificate').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvFupBirthCertificate'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvFupBirthCertificate_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvFupBirthCertificate","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvFupBirthCertificate"));
+});
+
+document.getElementById('regvFupBirthCertificate').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupBirthCertificate'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupBirthCertificate_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupBirthCertificate","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupBirthCertificate"));
+});
+
+document.getElementById('regvFupDomicileAttachProof').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupDomicileAttachProof'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupDomicileAttachProof_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupDomicileAttachProof","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupDomicileAttachProof"));
+});
+
+document.getElementById('rfvtxtHouseNoApartment').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtHouseNoApartment'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtHouseNoApartment_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtHouseNoApartment","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtHouseNoApartment"));
+});
+
+document.getElementById('rfvtxtStreetVillageColony').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtStreetVillageColony'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtStreetVillageColony_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtStreetVillageColony","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtStreetVillageColony"));
+});
+
+document.getElementById('rfvtxtDistrictCity').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtDistrictCity'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtDistrictCity_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtDistrictCity","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtDistrictCity"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.FilteredTextBoxBehavior, {"FilterType":2,"id":"ftrtxtPincode"}, null, null, $get("txtPincode"));
+});
+
+document.getElementById('rfvtxtPincode').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtPincode'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtPincode_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtPincode","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtPincode"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.FilteredTextBoxBehavior, {"FilterType":2,"id":"ftrtxtMobileNo"}, null, null, $get("txtMobileNo"));
+});
+
+document.getElementById('rfvtxtMobileNo').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtMobileNo'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtMobileNo_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtMobileNo","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtMobileNo"));
+});
+
+document.getElementById('rfvtxtEmailId').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtEmailId'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtEmailId_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtEmailId","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtEmailId"));
+});
+
+document.getElementById('revemailid').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('revemailid'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerevemailid_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerevemailid","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("revemailid"));
+});
+
+document.getElementById('rfvddlEduationQualification').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvddlEduationQualification'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvddlEduationQualification_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvddlEduationQualification","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvddlEduationQualification"));
+});
+
+document.getElementById('rfvFupEducationQualification').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvFupEducationQualification'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvFupEducationQualification_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvFupEducationQualification","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvFupEducationQualification"));
+});
+
+document.getElementById('regvFupEducationQualification').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupEducationQualification'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupEducationQualification_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupEducationQualification","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupEducationQualification"));
+});
+
+document.getElementById('regvFupAnyAdventureCoursePhoto').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupAnyAdventureCoursePhoto'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupAnyAdventureCoursePhoto_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupAnyAdventureCoursePhoto","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupAnyAdventureCoursePhoto"));
+});
+
+document.getElementById('regvFupCurrentEmployment').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupCurrentEmployment'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupCurrentEmployment_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupCurrentEmployment","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupCurrentEmployment"));
+});
+
+document.getElementById('RequiredFieldValidator1').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('RequiredFieldValidator1'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"ValidatorCalloutExtender1_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"ValidatorCalloutExtender1","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvddlEduationQualification"));
+});
+
+document.getElementById('rfvtxtBloodGroup').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtBloodGroup'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtBloodGroup_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtBloodGroup","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtBloodGroup"));
+});
+
+document.getElementById('rfvFupPhototOfApplicant').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvFupPhototOfApplicant'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvFupPhototOfApplicant_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvFupPhototOfApplicant","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvFupPhototOfApplicant"));
+});
+
+document.getElementById('regvFupPhototOfApplicant').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupPhototOfApplicant'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupPhototOfApplicant_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupPhototOfApplicant","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupPhototOfApplicant"));
+});
+
+document.getElementById('rfvFupSignatureOfAppicant').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvFupSignatureOfAppicant'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvFupSignatureOfAppicant_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvFupSignatureOfAppicant","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvFupSignatureOfAppicant"));
+});
+
+document.getElementById('regvFupSignatureOfAppicant').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupSignatureOfAppicant'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupSignatureOfAppicant_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupSignatureOfAppicant","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupSignatureOfAppicant"));
+});
+
+document.getElementById('rfvtxtEmergencyContactName').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtEmergencyContactName'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtEmergencyContactName_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtEmergencyContactName","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtEmergencyContactName"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.FilteredTextBoxBehavior, {"FilterType":2,"id":"ftrtxtEmergencyContactPhone"}, null, null, $get("txtEmergencyContactPhone"));
+});
+
+document.getElementById('rfvtxtEmergencyContactPhone').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvtxtEmergencyContactPhone'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvtxtEmergencyContactPhone_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvtxtEmergencyContactPhone","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvtxtEmergencyContactPhone"));
+});
+
+document.getElementById('rfvFupParentGuardianSignature').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('rfvFupParentGuardianSignature'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vcerfvFupParentGuardianSignature_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vcerfvFupParentGuardianSignature","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("rfvFupParentGuardianSignature"));
+});
+
+document.getElementById('regvFupParentGuardianSignature').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('regvFupParentGuardianSignature'));
+}
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ValidatorCalloutBehavior, {"ClientStateFieldID":"vceregvFupParentGuardianSignature_ClientState","closeImageUrl":"/WebResource.axd?d=gwMPFIc_iiOQMVHaFUFa7wg09931k7OWL-dNZu1hUNGmlIRYVvIA9ngye4Wsmd0HSqjafs4Nt-NbnnciqmJVAK2BXfnsJ9_NHD6DOaooi9ZadoKz8iwFQPmMRtliY8wIiro4yuxd6Pqkd8c7BFQhVw2\u0026t=636668282680000000","id":"vceregvFupParentGuardianSignature","warningIconImageUrl":"images/wrning.gif"}, null, null, $get("regvFupParentGuardianSignature"));
+});
+//]]>
+</script>
+</form>
+</body>
+</html>

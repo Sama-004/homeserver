@@ -1,0 +1,39 @@
+{
+  "//site": "formUrl: the admission form (no OTP needed: it opens with ?mobile=). Detection uses dummyMobile; booking uses IISM_MOBILE from trackers/.env.",
+  "site": {
+    "formUrl": "https://admission.iismgulmarg.in/admission_form.aspx",
+    "dummyMobile": "123456789"
+  },
+
+  "//targets": "Course + level pairs to book (regexes on the option text), in priority order. Every batch of each is watched and booked.",
+  "targets": [
+    { "name": "Gulmarg Basic", "course": "snow ?ski.*gulmarg", "level": "^basic" },
+    { "name": "Kargil Basic", "course": "snow ?ski.*kargil", "level": "^basic" },
+    { "name": "Gulmarg Snowboarding", "course": "snow ?ski.*gulmarg", "level": "snow ?board" }
+  ],
+  "state": "WEST BENGAL",
+
+  "//watch": "everySeconds between seat checks (each is one parallel round of batch postbacks); backoffSeconds while the site is failing; rebuildMinutes: redo the course -> level walk (picks up newly listed courses). intervalMinutes is only the healthchecks.io timeout.",
+  "watch": {
+    "everySeconds": 15,
+    "jitterSeconds": 3,
+    "backoffSeconds": 45,
+    "rebuildMinutes": 5,
+    "timeoutSeconds": 40,
+    "intervalMinutes": 10
+  },
+
+  "//book": "maxParallel booking tabs (one per course+batch with seats). A tab closes when its batch shows 0 seats for closeAfterZeroChecks checks in a row, or after attemptMinutes.",
+  "book": {
+    "maxParallel": 4,
+    "closeAfterZeroChecks": 3,
+    "attemptMinutes": 20,
+    "minSubmitGapSeconds": 3
+  },
+
+  "notify": {
+    "server": "https://ntfy.sh",
+    "dailyHour": 9,
+    "failureAlertMinutes": 60
+  }
+}

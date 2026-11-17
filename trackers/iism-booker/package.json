@@ -1,0 +1,16 @@
+{
+  "name": "iism-booker",
+  "version": "1.0.0",
+  "description": "Watches every allowed IISM Gulmarg batch's seats every 15 s and books the first seat with headless Chromium + the user's autofill userscript.",
+  "type": "module",
+  "scripts": {
+    "start": "node booker.mjs",
+    "check": "node booker.mjs --check"
+  },
+  "dependencies": {
+    "playwright-core": "1.56.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

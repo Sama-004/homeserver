@@ -67,6 +67,25 @@ services:
       <<: *tracker-env
       HC_SLUG: abvimas-notifier
 
+  # Not a run-loop tracker: one long-lived process that checks every 15 s and keeps headless
+  # Chromium for booking. data/ holds the user's autofill.user.js (copied by hand, never
+  # committed); IISM_MOBILE comes from .env.
+  iism-booker:
+    build: ./iism-booker
+    container_name: iism-booker
+    restart: unless-stopped
+    init: true
+    shm_size: 512mb
+    env_file:
+      - .env
+    volumes:
+      - ./iism-booker/config.json:/app/config.json:ro
+      - ./iism-booker/data:/app/data
+    environment:
+      TZ: Asia/Kolkata
+      DATA_DIR: /app/data
+      HC_SLUG: iism-booker
+
   amul-notifier:
     <<: *tracker
     build: ./amul
